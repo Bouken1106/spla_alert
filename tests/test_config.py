@@ -35,6 +35,27 @@ class ConfigTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "friendly_slot_centers_x"):
             load_config(config_path)
 
+    def test_load_config_applies_classifier_overrides(self):
+        config_path = self._write_config(
+            {
+                "classifier": {
+                    "channel_spread_threshold": "45",
+                    "visible_colored_ratio_threshold": "0.3",
+                    "inner_ignore_ratio": 0.2,
+                }
+            }
+        )
+
+        config = load_config(config_path)
+
+        self.assertEqual(config.classifier.channel_spread_threshold, 45)
+        self.assertEqual(config.classifier.visible_colored_ratio_threshold, 0.3)
+        self.assertEqual(config.classifier.inner_ignore_ratio, 0.2)
+        self.assertEqual(
+            config.classifier.saturation_threshold,
+            AppConfig().classifier.saturation_threshold,
+        )
+
     def _write_config(self, value):
         temp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(temp_dir.cleanup)

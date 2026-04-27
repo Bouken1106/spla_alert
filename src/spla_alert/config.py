@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
 import json
 from pathlib import Path
@@ -11,6 +11,22 @@ SLOT_COUNT = 4
 SlotCenters = tuple[float, float, float, float]
 DEFAULT_FRIENDLY_X = (0.374, 0.409, 0.444, 0.479)
 DEFAULT_ENEMY_X = (0.521, 0.556, 0.591, 0.626)
+_CLASSIFIER_INT_FIELDS = (
+    "saturation_threshold",
+    "channel_spread_threshold",
+    "value_min",
+    "p90_saturation_threshold",
+    "p90_channel_spread_threshold",
+    "min_colored_pixels",
+)
+_CLASSIFIER_FLOAT_FIELDS = (
+    "lab_chroma_threshold",
+    "colored_ratio_threshold",
+    "weak_colored_ratio_threshold",
+    "visible_colored_ratio_threshold",
+    "min_colored_area_ratio",
+    "inner_ignore_ratio",
+)
 
 
 @dataclass(frozen=True)
@@ -82,48 +98,18 @@ def _load_hud(default: HudConfig, raw: dict[str, Any]) -> HudConfig:
 def _load_classifier(
     default: ClassifierConfig, raw: dict[str, Any]
 ) -> ClassifierConfig:
-    return ClassifierConfig(
-        saturation_threshold=int(
-            raw.get("saturation_threshold", default.saturation_threshold)
-        ),
-        channel_spread_threshold=int(
-            raw.get("channel_spread_threshold", default.channel_spread_threshold)
-        ),
-        lab_chroma_threshold=float(
-            raw.get("lab_chroma_threshold", default.lab_chroma_threshold)
-        ),
-        value_min=int(raw.get("value_min", default.value_min)),
-        colored_ratio_threshold=float(
-            raw.get("colored_ratio_threshold", default.colored_ratio_threshold)
-        ),
-        weak_colored_ratio_threshold=float(
-            raw.get("weak_colored_ratio_threshold", default.weak_colored_ratio_threshold)
-        ),
-        visible_colored_ratio_threshold=float(
-            raw.get(
-                "visible_colored_ratio_threshold",
-                default.visible_colored_ratio_threshold,
-            )
-        ),
-        p90_saturation_threshold=int(
-            raw.get("p90_saturation_threshold", default.p90_saturation_threshold)
-        ),
-        p90_channel_spread_threshold=int(
-            raw.get(
-                "p90_channel_spread_threshold",
-                default.p90_channel_spread_threshold,
-            )
-        ),
-        min_colored_pixels=int(
-            raw.get("min_colored_pixels", default.min_colored_pixels)
-        ),
-        min_colored_area_ratio=float(
-            raw.get("min_colored_area_ratio", default.min_colored_area_ratio)
-        ),
-        inner_ignore_ratio=float(
-            raw.get("inner_ignore_ratio", default.inner_ignore_ratio)
-        ),
-    )
+    overrides: dict[str, Any] = {}
+    overrides.update(_coerced_overrides(raw, _CLASSIFIER_INT_FIELDS, int))
+    overrides.update(_coerced_overrides(raw, _CLASSIFIER_FLOAT_FIELDS, float))
+    return replace(default, **overrides)
+
+
+def _coerced_overrides(
+    raw: dict[str, Any],
+    field_names: tuple[str, ...],
+    coerce: Callable[[Any], Any],
+) -> dict[str, Any]:
+    return {name: coerce(raw[name]) for name in field_names if name in raw}
 
 
 def _slot_centers(value: Any, field_name: str) -> SlotCenters:
