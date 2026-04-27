@@ -1,0 +1,177 @@
+{
+  "frame_index": 0,
+  "hud_present": false,
+  "friendly_alive": 0,
+  "enemy_alive": 0,
+  "slots": [
+    {
+      "side": "friendly",
+      "index": 0,
+      "alive": false,
+      "bbox": [
+        453,
+        16,
+        506,
+        69
+      ],
+      "colored_ratio": 0.4444,
+      "visible_colored_ratio": 0.4502,
+      "p90_saturation": 183.0,
+      "p90_channel_spread": 147.0,
+      "colored_pixels": 104,
+      "visible_pixels": 231,
+      "score_pixels": 234,
+      "dominant_hue": 58.6,
+      "x_mark_score": 0.0046,
+      "x_mark_min_line_ratio": 0.3926
+    },
+    {
+      "side": "friendly",
+      "index": 1,
+      "alive": false,
+      "bbox": [
+        498,
+        16,
+        551,
+        69
+      ],
+      "colored_ratio": 0.1752,
+      "visible_colored_ratio": 0.176,
+      "p90_saturation": 129.8,
+      "p90_channel_spread": 43.8,
+      "colored_pixels": 41,
+      "visible_pixels": 233,
+      "score_pixels": 234,
+      "dominant_hue": 68.5,
+      "x_mark_score": 0.0,
+      "x_mark_min_line_ratio": 0.4013
+    },
+    {
+      "side": "friendly",
+      "index": 2,
+      "alive": false,
+      "bbox": [
+        542,
+        16,
+        595,
+        69
+      ],
+      "colored_ratio": 0.3162,
+      "visible_colored_ratio": 0.3246,
+      "p90_saturation": 141.2,
+      "p90_channel_spread": 94.0,
+      "colored_pixels": 74,
+      "visible_pixels": 228,
+      "score_pixels": 234,
+      "dominant_hue": 22.1,
+      "x_mark_score": 0.0,
+      "x_mark_min_line_ratio": 0.2169
+    },
+    {
+      "side": "friendly",
+      "index": 3,
+      "alive": false,
+      "bbox": [
+        587,
+        16,
+        640,
+        69
+      ],
+      "colored_ratio": 0.2393,
+      "visible_colored_ratio": 0.2414,
+      "p90_saturation": 134.0,
+      "p90_channel_spread": 69.0,
+      "colored_pixels": 56,
+      "visible_pixels": 232,
+      "score_pixels": 234,
+      "dominant_hue": 61.9,
+      "x_mark_score": 0.0,
+      "x_mark_min_line_ratio": 0.0694
+    },
+    {
+      "side": "enemy",
+      "index": 0,
+      "alive": false,
+      "bbox": [
+        641,
+        16,
+        694,
+        69
+      ],
+      "colored_ratio": 0.2094,
+      "visible_colored_ratio": 0.2112,
+      "p90_saturation": 174.0,
+      "p90_channel_spread": 86.0,
+      "colored_pixels": 49,
+      "visible_pixels": 232,
+      "score_pixels": 234,
+      "dominant_hue": 26.2,
+      "x_mark_score": 0.0092,
+      "x_mark_min_line_ratio": 0.3796
+    },
+    {
+      "side": "enemy",
+      "index": 1,
+      "alive": false,
+      "bbox": [
+        686,
+        16,
+        739,
+        69
+      ],
+      "colored_ratio": 0.1795,
+      "visible_colored_ratio": 0.1795,
+      "p90_saturation": 177.4,
+      "p90_channel_spread": 69.7,
+      "colored_pixels": 42,
+      "visible_pixels": 234,
+      "score_pixels": 234,
+      "dominant_hue": 21.8,
+      "x_mark_score": 0.0,
+      "x_mark_min_line_ratio": 0.7028
+    },
+    {
+      "side": "enemy",
+      "index": 2,
+      "alive": false,
+      "bbox": [
+        730,
+        16,
+        783,
+        69
+      ],
+      "colored_ratio": 0.0299,
+      "visible_colored_ratio": 0.0299,
+      "p90_saturation": 36.0,
+      "p90_channel_spread": 15.0,
+      "colored_pixels": 7,
+      "visible_pixels": 234,
+      "score_pixels": 234,
+      "dominant_hue": 20.6,
+      "x_mark_score": 0.0655,
+      "x_mark_min_line_ratio": 0.9089
+    },
+    {
+      "side": "enemy",
+      "index": 3,
+      "alive": false,
+      "bbox": [
+        775,
+        16,
+        828,
+        69
+      ],
+      "colored_ratio": 0.1239,
+      "visible_colored_ratio": 0.1266,
+      "p90_saturation": 151.4,
+      "p90_channel_spread": 61.4,
+      "colored_pixels": 29,
+      "visible_pixels": 229,
+      "score_pixels": 234,
+      "dominant_hue": 25.2,
+      "x_mark_score": 0.0,
+      "x_mark_min_line_ratio": 0.6746
+    }
+  ],
+  "processed_at": 1777277166.4515183
+}

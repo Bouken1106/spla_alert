@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import time
 from typing import Any, Iterable, Literal
 
@@ -13,6 +13,28 @@ from .config import AppConfig, ClassifierConfig
 Side = Literal["friendly", "enemy"]
 BBox = tuple[int, int, int, int]
 SlotRegion = tuple[Side, int, BBox]
+
+
+_SLOT_PROBE_OFFSETS = (
+    (-0.22, -0.30),
+    (0.00, -0.32),
+    (0.22, -0.30),
+    (-0.30, -0.22),
+    (0.30, -0.22),
+    (-0.34, 0.00),
+    (-0.20, 0.00),
+    (0.20, 0.00),
+    (0.34, 0.00),
+    (-0.30, 0.22),
+    (0.30, 0.22),
+    (-0.22, 0.30),
+    (0.00, 0.32),
+    (0.22, 0.30),
+    (-0.18, -0.18),
+    (0.18, -0.18),
+    (-0.18, 0.18),
+    (0.18, 0.18),
+)
 
 
 @dataclass(frozen=True)
@@ -70,6 +92,7 @@ class SlotStatus:
 @dataclass(frozen=True)
 class CountResult:
     frame_index: int
+    hud_present: bool
     friendly_alive: int
     enemy_alive: int
     slots: tuple[SlotStatus, ...]
@@ -78,6 +101,7 @@ class CountResult:
     def to_dict(self) -> dict[str, Any]:
         return {
             "frame_index": self.frame_index,
+            "hud_present": self.hud_present,
             "friendly_alive": self.friendly_alive,
             "enemy_alive": self.enemy_alive,
             "slots": [slot.to_dict() for slot in self.slots],
@@ -94,11 +118,20 @@ class SplatoonHudDetector:
             raise ValueError("frame must be a BGR image with shape HxWx3")
 
         slots = tuple(self._classify_slots(frame))
+        hud_present = (
+            _hud_present(frame, slots, self.config)
+            if self.config.classifier.require_hud_presence
+            else True
+        )
+        if not hud_present:
+            slots = tuple(replace(slot, alive=False) for slot in slots)
+
         friendly_alive = _alive_count(slots, "friendly")
         enemy_alive = _alive_count(slots, "enemy")
 
         return CountResult(
             frame_index=frame_index,
+            hud_present=hud_present,
             friendly_alive=friendly_alive,
             enemy_alive=enemy_alive,
             slots=slots,
@@ -159,7 +192,7 @@ def _measure_slot_color(crop: np.ndarray, cfg: ClassifierConfig) -> _SlotColorMe
     lab_b = lab[:, :, 2].astype(np.float32) - 128.0
     lab_chroma = np.sqrt(lab_a * lab_a + lab_b * lab_b)
 
-    score_mask = _ellipse_mask(crop.shape[:2], cfg.inner_ignore_ratio)
+    score_mask = _probe_sample_mask(crop.shape[:2], cfg.probe_radius_ratio)
     visible_mask = score_mask & (value >= cfg.value_min)
     score_pixels = int(score_mask.sum())
     visible_pixels = int(visible_mask.sum())
@@ -201,6 +234,22 @@ def _colored_pixel_mask(
     return (saturated & color_separated) | chromatic
 
 
+def _probe_sample_mask(
+    shape: tuple[int, int], probe_radius_ratio: float
+) -> np.ndarray:
+    height, width = shape
+    mask = np.zeros(shape, dtype=np.uint8)
+    if height <= 0 or width <= 0:
+        return mask.astype(bool)
+
+    radius = max(1, int(round(min(height, width) * probe_radius_ratio)))
+    for offset_x, offset_y in _SLOT_PROBE_OFFSETS:
+        center_x = int(round((0.5 + offset_x) * (width - 1)))
+        center_y = int(round((0.5 + offset_y) * (height - 1)))
+        cv2.circle(mask, (center_x, center_y), radius, 1, thickness=-1)
+    return mask.astype(bool)
+
+
 def _is_alive(metrics: _SlotColorMetrics, cfg: ClassifierConfig) -> bool:
     if metrics.score_pixels == 0 or metrics.visible_pixels == 0:
         return False
@@ -231,6 +280,102 @@ def _is_alive(metrics: _SlotColorMetrics, cfg: ClassifierConfig) -> bool:
         )
     )
     return strong_area_match or strong_visible_match or weak_but_saturated
+
+
+def _hud_present(
+    frame: np.ndarray, slots: tuple[SlotStatus, ...], config: AppConfig
+) -> bool:
+    cfg = config.classifier
+    return (
+        _timer_present(frame, config)
+        and _alive_count(slots, "friendly") + _alive_count(slots, "enemy")
+        >= cfg.hud_min_alive_slots
+        and _team_hues_are_separated(slots, cfg)
+    )
+
+
+def _timer_present(frame: np.ndarray, config: AppConfig) -> bool:
+    cfg = config.classifier
+    height, width = frame.shape[:2]
+    crop_width = max(16, int(round(cfg.hud_timer_width_ratio * width)))
+    crop_height = max(12, int(round(cfg.hud_timer_height_ratio * height)))
+    center_x = width // 2
+    center_y = int(round(config.hud.slot_center_y * height))
+    x1 = max(0, center_x - crop_width // 2)
+    x2 = min(width, center_x + crop_width // 2)
+    y1 = max(0, center_y - crop_height // 2)
+    y2 = min(height, center_y + crop_height // 2)
+    crop = frame[y1:y2, x1:x2]
+    if crop.size == 0:
+        return False
+
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    bright_timer_pixels = (value >= cfg.hud_timer_bright_value_min) & (
+        saturation <= cfg.hud_timer_bright_saturation_max
+    )
+    dark_timer_pixels = value <= cfg.hud_timer_dark_value_max
+    center_edges = _timer_center_edge_ratio(crop)
+    return (
+        float(bright_timer_pixels.mean()) >= cfg.hud_timer_bright_ratio_threshold
+        and float(dark_timer_pixels.mean()) >= cfg.hud_timer_dark_ratio_threshold
+        and center_edges >= cfg.hud_timer_edge_ratio_threshold
+    )
+
+
+def _timer_center_edge_ratio(crop: np.ndarray) -> float:
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 60, 160)
+    height, width = edges.shape[:2]
+    center = edges[
+        height * 15 // 100 : height * 85 // 100,
+        width * 35 // 100 : width * 65 // 100,
+    ]
+    if center.size == 0:
+        return 0.0
+    return float((center > 0).mean())
+
+
+def _team_hues_are_separated(
+    slots: tuple[SlotStatus, ...], cfg: ClassifierConfig
+) -> bool:
+    friendly_hue = _side_hue(slots, "friendly", cfg.hud_team_hue_slots_min)
+    enemy_hue = _side_hue(slots, "enemy", cfg.hud_team_hue_slots_min)
+    if friendly_hue is None or enemy_hue is None:
+        return True
+    return _hue_distance(friendly_hue, enemy_hue) >= cfg.hud_min_team_hue_distance
+
+
+def _side_hue(
+    slots: tuple[SlotStatus, ...], side: Side, min_slots: int
+) -> float | None:
+    hues = [
+        slot.dominant_hue
+        for slot in slots
+        if slot.side == side and slot.alive and slot.dominant_hue is not None
+    ]
+    if len(hues) < min_slots:
+        return None
+    return _circular_mean(tuple(hues))
+
+
+def _circular_mean(angles: tuple[float, ...]) -> float | None:
+    if not angles:
+        return None
+    radians = np.deg2rad(np.array(angles, dtype=np.float32))
+    mean_sin = float(np.sin(radians).mean())
+    mean_cos = float(np.cos(radians).mean())
+    if mean_sin == 0.0 and mean_cos == 0.0:
+        return None
+    angle = np.arctan2(mean_sin, mean_cos)
+    if angle < 0:
+        angle += 2.0 * np.pi
+    return float(np.rad2deg(angle))
+
+
+def _hue_distance(a: float, b: float) -> float:
+    return abs((a - b + 180.0) % 360.0 - 180.0)
 
 
 def _slot_status(
@@ -339,7 +484,11 @@ def _draw_slot(overlay: np.ndarray, slot: SlotStatus) -> None:
 
 
 def _draw_summary(overlay: np.ndarray, result: CountResult) -> None:
-    text = f"friendly {result.friendly_alive}/4  enemy {result.enemy_alive}/4"
+    text = (
+        f"friendly {result.friendly_alive}/4  enemy {result.enemy_alive}/4"
+        if result.hud_present
+        else "HUD not found"
+    )
     cv2.putText(
         overlay,
         text,

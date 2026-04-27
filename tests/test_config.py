@@ -39,24 +39,34 @@ class ConfigTest(unittest.TestCase):
         config_path = self._write_config(
             {
                 "classifier": {
+                    "require_hud_presence": "false",
                     "channel_spread_threshold": "45",
                     "visible_colored_ratio_threshold": "0.3",
-                    "inner_ignore_ratio": 0.2,
                     "x_mark_saturation_max": "65",
                     "x_mark_contrast_threshold": "0.12",
                     "x_mark_max_colored_ratio": "0.58",
+                    "probe_radius_ratio": "0.04",
+                    "hud_timer_dark_ratio_threshold": "0.2",
+                    "hud_timer_edge_ratio_threshold": "0.08",
+                    "hud_team_hue_slots_min": "3",
+                    "hud_min_alive_slots": "2",
                 }
             }
         )
 
         config = load_config(config_path)
 
+        self.assertFalse(config.classifier.require_hud_presence)
         self.assertEqual(config.classifier.channel_spread_threshold, 45)
         self.assertEqual(config.classifier.visible_colored_ratio_threshold, 0.3)
-        self.assertEqual(config.classifier.inner_ignore_ratio, 0.2)
         self.assertEqual(config.classifier.x_mark_saturation_max, 65)
         self.assertEqual(config.classifier.x_mark_contrast_threshold, 0.12)
         self.assertEqual(config.classifier.x_mark_max_colored_ratio, 0.58)
+        self.assertEqual(config.classifier.probe_radius_ratio, 0.04)
+        self.assertEqual(config.classifier.hud_timer_dark_ratio_threshold, 0.2)
+        self.assertEqual(config.classifier.hud_timer_edge_ratio_threshold, 0.08)
+        self.assertEqual(config.classifier.hud_team_hue_slots_min, 3)
+        self.assertEqual(config.classifier.hud_min_alive_slots, 2)
         self.assertEqual(
             config.classifier.saturation_threshold,
             AppConfig().classifier.saturation_threshold,

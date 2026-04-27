@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-27T16:03:45+0900",
+  "generated_at": "2026-04-27T17:06:07+0900",
   "fixtures": [
     {
       "name": "inkipedia_s3_replay",
@@ -31,6 +31,7 @@
           ]
         },
         "classifier": {
+          "require_hud_presence": true,
           "saturation_threshold": 60,
           "channel_spread_threshold": 35,
           "lab_chroma_threshold": 22.0,
@@ -40,18 +41,30 @@
           "visible_colored_ratio_threshold": 0.22,
           "p90_saturation_threshold": 100,
           "p90_channel_spread_threshold": 70,
-          "min_colored_pixels": 40,
+          "min_colored_pixels": 12,
           "min_colored_area_ratio": 0.012,
-          "inner_ignore_ratio": 0.26,
           "x_mark_value_min": 80,
           "x_mark_saturation_max": 70,
           "x_mark_line_ratio_threshold": 0.24,
           "x_mark_contrast_threshold": 0.11,
           "x_mark_band_width": 0.12,
-          "x_mark_max_colored_ratio": 0.62
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
         }
       },
       "actual": {
+        "hud_present": true,
         "friendly_alive": 4,
         "enemy_alive": 4
       }
@@ -86,6 +99,7 @@
           ]
         },
         "classifier": {
+          "require_hud_presence": false,
           "saturation_threshold": 60,
           "channel_spread_threshold": 35,
           "lab_chroma_threshold": 22.0,
@@ -95,20 +109,1868 @@
           "visible_colored_ratio_threshold": 0.22,
           "p90_saturation_threshold": 100,
           "p90_channel_spread_threshold": 70,
-          "min_colored_pixels": 40,
+          "min_colored_pixels": 12,
           "min_colored_area_ratio": 0.012,
-          "inner_ignore_ratio": 0.26,
           "x_mark_value_min": 80,
           "x_mark_saturation_max": 70,
           "x_mark_line_ratio_threshold": 0.24,
           "x_mark_contrast_threshold": 0.11,
           "x_mark_band_width": 0.12,
-          "x_mark_max_colored_ratio": 0.62
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
         }
       },
       "actual": {
+        "hud_present": true,
         "friendly_alive": 3,
         "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s2_battle_ui_one_dead",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_new_battle_UI_promo_EN.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/7/7b/S2_new_battle_UI_promo_EN.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_battle_ui_one_dead.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_battle_ui_one_dead_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_battle_ui_one_dead.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s2_spectator_view_two_dead",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Spectator_View_promo_1.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/4/40/S2_Spectator_View_promo_1.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_spectator_view_two_dead.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_spectator_view_two_dead_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_spectator_view_two_dead.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      }
+    },
+    {
+      "name": "inkipedia_s2_spectator_view_action_two_dead",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Spectator_View_promo_3.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/0/06/S2_Spectator_View_promo_3.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_spectator_view_action_two_dead.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_spectator_view_action_two_dead_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_spectator_view_action_two_dead.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      }
+    },
+    {
+      "name": "inkipedia_s2_spectator_view_all_alive",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Spectator_View_promo_4.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/e/e3/S2_Spectator_View_promo_4.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_spectator_view_all_alive.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_spectator_view_all_alive_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_spectator_view_all_alive.json",
+      "expected": {
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s2_spectator_view_close_all_alive",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Spectator_View_promo_5.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/5/5e/S2_Spectator_View_promo_5.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_spectator_view_close_all_alive.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_spectator_view_close_all_alive_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_spectator_view_close_all_alive.json",
+      "expected": {
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s3_replay_en",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Replay_EN.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/e/e8/S3_Replay_EN.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_replay_en.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_replay_en_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_replay_en.json",
+      "expected": {
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s3_replay_hidden_interface",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Replay_hidden_interface_EN.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/d/d7/S3_Replay_hidden_interface_EN.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_replay_hidden_interface.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_replay_hidden_interface_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_replay_hidden_interface.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s3_replay_top_view",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Replay_screenshot_top_view_JP.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/3/31/S3_Replay_screenshot_top_view_JP.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_replay_top_view.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_replay_top_view_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_replay_top_view.json",
+      "expected": {
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s3_rainmaker_promotional",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Rainmaker_promotional_JP.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/5/5f/S3_Rainmaker_promotional_JP.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_rainmaker_promotional.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_rainmaker_promotional_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_rainmaker_promotional.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      }
+    },
+    {
+      "name": "inkipedia_s3_tower_objective_camera",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Towering_Tower_Control_Objective_Camera.png",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/3/32/S3_Towering_Tower_Control_Objective_Camera.png",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_tower_objective_camera.png",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_tower_objective_camera_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_tower_objective_camera.json",
+      "expected": {
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 3,
+        "enemy_alive": 3
+      }
+    },
+    {
+      "name": "inkipedia_s3_tower_control_tower",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Towering_Tower_Control_Tower.png",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/5/50/S3_Towering_Tower_Control_Tower.png",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_tower_control_tower.png",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_tower_control_tower_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_tower_control_tower.json",
+      "expected": {
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": true,
+        "friendly_alive": 4,
+        "enemy_alive": 4
+      }
+    },
+    {
+      "name": "inkipedia_s2_spectator_map_view_no_top_hud",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Spectator_View_promo_2.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/b/bb/S2_Spectator_View_promo_2.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_spectator_map_view_no_top_hud.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_spectator_map_view_no_top_hud_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_spectator_map_view_no_top_hud.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_squid_roll",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_first_twitter_preview_-_squid_roll.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/2/27/S3_first_twitter_preview_-_squid_roll.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_squid_roll.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_squid_roll_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_squid_roll.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_shop",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Expansion_Pass_Jelly_Fresh_interior_EN.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/a/ad/S3_Expansion_Pass_Jelly_Fresh_interior_EN.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_shop.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_shop_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_shop.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_banners",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Banners_screenshot_EN.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/7/7f/S3_Banners_screenshot_EN.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_banners.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_banners_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_banners.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_crab_n_go",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Crab-N-Go_promo.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/8/8b/S3_Crab-N-Go_promo.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_crab_n_go.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_crab_n_go_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_crab_n_go.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_drop_into_battle",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_drop_into_battle.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/2/23/S3_drop_into_battle.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_drop_into_battle.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_drop_into_battle_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_drop_into_battle.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_splatsville_pig",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:Splatsville_pig.png",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/2/24/Splatsville_pig.png",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_splatsville_pig.png",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_splatsville_pig_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_splatsville_pig.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_x100_battle_chance",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:Increased_x100_Battle_Chance_In_Chaos_vs_Order.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/0/0f/Increased_x100_Battle_Chance_In_Chaos_vs_Order.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_x100_battle_chance.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_x100_battle_chance_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_x100_battle_chance.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s2_no_hud_turf_war_promo",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Turf_War_promo_1.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/b/b9/S2_Turf_War_promo_1.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_no_hud_turf_war_promo.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_no_hud_turf_war_promo_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_no_hud_turf_war_promo.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s3_no_hud_tricolor_map",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S3_Tricolor_Bluefin_Depot_JP.png",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/6/66/S3_Tricolor_Bluefin_Depot_JP.png",
+      "source_image": "webtest_outputs/source_images/inkipedia_s3_no_hud_tricolor_map.png",
+      "overlay": "webtest_outputs/overlays/inkipedia_s3_no_hud_tricolor_map_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s3_no_hud_tricolor_map.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s1_no_hud_turf_war_promo_1",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S_Turf_War_promo_1.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/8/80/S_Turf_War_promo_1.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s1_no_hud_turf_war_promo_1.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s1_no_hud_turf_war_promo_1_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s1_no_hud_turf_war_promo_1.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s1_no_hud_turf_war_promo_3",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S_Turf_War_promo_3.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/e/e9/S_Turf_War_promo_3.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s1_no_hud_turf_war_promo_3.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s1_no_hud_turf_war_promo_3_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s1_no_hud_turf_war_promo_3.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s1_no_hud_turf_war_promo_5",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S_Turf_War_promo_5.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/4/4e/S_Turf_War_promo_5.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s1_no_hud_turf_war_promo_5.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s1_no_hud_turf_war_promo_5_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s1_no_hud_turf_war_promo_5.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s2_no_hud_splashdown_promo_1",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Splashdown_promo_1.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/b/b3/S2_Splashdown_promo_1.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_no_hud_splashdown_promo_1.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_no_hud_splashdown_promo_1_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_no_hud_splashdown_promo_1.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s2_no_hud_splashdown_promo_2",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Splashdown_promo_2.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/e/e1/S2_Splashdown_promo_2.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_no_hud_splashdown_promo_2.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_no_hud_splashdown_promo_2_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_no_hud_splashdown_promo_2.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      }
+    },
+    {
+      "name": "inkipedia_s2_no_hud_ultra_stamp_promo",
+      "status": "PASS",
+      "source_page": "https://splatoonwiki.org/wiki/File:S2_Ultra_Stamp_promo_1.jpg",
+      "image_url": "https://cdn.wikimg.net/en/splatoonwiki/images/e/ed/S2_Ultra_Stamp_promo_1.jpg",
+      "source_image": "webtest_outputs/source_images/inkipedia_s2_no_hud_ultra_stamp_promo.jpg",
+      "overlay": "webtest_outputs/overlays/inkipedia_s2_no_hud_ultra_stamp_promo_overlay.jpg",
+      "result_json": "webtest_outputs/results/inkipedia_s2_no_hud_ultra_stamp_promo.json",
+      "expected": {
+        "friendly_alive": 0,
+        "enemy_alive": 0
+      },
+      "config": {
+        "hud": {
+          "slot_center_y": 0.058,
+          "slot_size": 0.074,
+          "friendly_slot_centers_x": [
+            0.374,
+            0.409,
+            0.444,
+            0.479
+          ],
+          "enemy_slot_centers_x": [
+            0.521,
+            0.556,
+            0.591,
+            0.626
+          ]
+        },
+        "classifier": {
+          "require_hud_presence": true,
+          "saturation_threshold": 60,
+          "channel_spread_threshold": 35,
+          "lab_chroma_threshold": 22.0,
+          "value_min": 45,
+          "colored_ratio_threshold": 0.08,
+          "weak_colored_ratio_threshold": 0.045,
+          "visible_colored_ratio_threshold": 0.22,
+          "p90_saturation_threshold": 100,
+          "p90_channel_spread_threshold": 70,
+          "min_colored_pixels": 12,
+          "min_colored_area_ratio": 0.012,
+          "x_mark_value_min": 80,
+          "x_mark_saturation_max": 70,
+          "x_mark_line_ratio_threshold": 0.24,
+          "x_mark_contrast_threshold": 0.11,
+          "x_mark_band_width": 0.12,
+          "x_mark_max_colored_ratio": 0.62,
+          "probe_radius_ratio": 0.035,
+          "hud_timer_width_ratio": 0.09,
+          "hud_timer_height_ratio": 0.06,
+          "hud_timer_bright_value_min": 185,
+          "hud_timer_bright_saturation_max": 95,
+          "hud_timer_dark_value_max": 60,
+          "hud_timer_bright_ratio_threshold": 0.045,
+          "hud_timer_dark_ratio_threshold": 0.16,
+          "hud_timer_edge_ratio_threshold": 0.07,
+          "hud_team_hue_slots_min": 2,
+          "hud_min_alive_slots": 1,
+          "hud_min_team_hue_distance": 25.0
+        }
+      },
+      "actual": {
+        "hud_present": false,
+        "friendly_alive": 0,
+        "enemy_alive": 0
       }
     }
   ]

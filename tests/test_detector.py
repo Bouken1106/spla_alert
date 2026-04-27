@@ -3,13 +3,13 @@ import unittest
 import cv2
 import numpy as np
 
-from spla_alert.config import AppConfig
+from spla_alert.config import AppConfig, ClassifierConfig
 from spla_alert.detector import SplatoonHudDetector
 
 
 class DetectorTest(unittest.TestCase):
     def test_counts_colored_icons_as_alive_and_gray_icons_as_dead(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
 
         friendly_alive = {0, 2, 3}
@@ -24,7 +24,7 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(result.frame_index, 20)
 
     def test_counts_scaled_720p_frame(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((720, 1280, 3), dtype=np.uint8)
 
         self._draw_slots(frame, config, "friendly", {0, 1}, (0, 180, 255))
@@ -40,11 +40,54 @@ class DetectorTest(unittest.TestCase):
 
         result = SplatoonHudDetector(AppConfig()).count(frame)
 
+        self.assertFalse(result.hud_present)
+        self.assertEqual(result.friendly_alive, 0)
+        self.assertEqual(result.enemy_alive, 0)
+
+    def test_colored_top_content_without_timer_is_not_counted(self):
+        config = AppConfig()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+
+        self._draw_slots(frame, config, "friendly", {0, 1, 2, 3}, (40, 230, 80))
+        self._draw_slots(frame, config, "enemy", {0, 1, 2, 3}, (230, 40, 190))
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertFalse(result.hud_present)
+        self.assertEqual(result.friendly_alive, 0)
+        self.assertEqual(result.enemy_alive, 0)
+
+    def test_timer_like_content_without_alive_slots_is_not_counted(self):
+        config = AppConfig()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        h, w = frame.shape[:2]
+        timer_center = (w // 2, int(config.hud.slot_center_y * h))
+        cv2.rectangle(
+            frame,
+            (timer_center[0] - 55, timer_center[1] - 24),
+            (timer_center[0] + 55, timer_center[1] + 24),
+            (20, 20, 20),
+            thickness=-1,
+        )
+        cv2.putText(
+            frame,
+            "4:00",
+            (timer_center[0] - 42, timer_center[1] + 13),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.9,
+            (235, 235, 235),
+            2,
+            cv2.LINE_AA,
+        )
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertFalse(result.hud_present)
         self.assertEqual(result.friendly_alive, 0)
         self.assertEqual(result.enemy_alive, 0)
 
     def test_special_glow_and_weapon_overlay_do_not_hide_alive_icon(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
 
         self._draw_slots(
@@ -69,8 +112,38 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(result.friendly_alive, 4)
         self.assertEqual(result.enemy_alive, 2)
 
+    def test_shifted_color_special_glow_is_still_alive(self):
+        config = self._config_without_hud_gate()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+
+        self._draw_slots(
+            frame,
+            config,
+            "friendly",
+            {0, 1, 2, 3},
+            (40, 230, 80),
+            glow_indexes={0, 1, 2, 3},
+            glow_color=(20, 240, 240),
+            glow_thickness=10,
+        )
+        self._draw_slots(
+            frame,
+            config,
+            "enemy",
+            {0, 1, 2, 3},
+            (230, 40, 190),
+            glow_indexes={0, 1, 2, 3},
+            glow_color=(240, 220, 20),
+            glow_thickness=10,
+        )
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertEqual(result.friendly_alive, 4)
+        self.assertEqual(result.enemy_alive, 4)
+
     def test_gray_icons_with_white_highlights_are_dead(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
 
         self._draw_slots(
@@ -95,8 +168,22 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(result.friendly_alive, 0)
         self.assertEqual(result.enemy_alive, 0)
 
+    def test_colored_center_weapon_on_dead_icon_is_ignored(self):
+        config = self._config_without_hud_gate()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+
+        self._draw_slots(frame, config, "friendly", set(), (40, 230, 80))
+        self._draw_slots(frame, config, "enemy", set(), (230, 40, 190))
+        self._draw_center_weapon(frame, config, "friendly", 0, (40, 230, 80))
+        self._draw_center_weapon(frame, config, "enemy", 2, (230, 40, 190))
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertEqual(result.friendly_alive, 0)
+        self.assertEqual(result.enemy_alive, 0)
+
     def test_x_marked_icon_with_colored_weapon_is_dead(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
 
         self._draw_slots(frame, config, "friendly", {1, 2, 3}, (40, 230, 80))
@@ -121,7 +208,7 @@ class DetectorTest(unittest.TestCase):
         )
 
     def test_smaller_advantage_icons_are_still_counted(self):
-        config = AppConfig()
+        config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
 
         self._draw_slots(
@@ -146,6 +233,9 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(result.friendly_alive, 2)
         self.assertEqual(result.enemy_alive, 3)
 
+    def _config_without_hud_gate(self):
+        return AppConfig(classifier=ClassifierConfig(require_hud_presence=False))
+
     def _draw_slots(
         self,
         frame,
@@ -155,6 +245,8 @@ class DetectorTest(unittest.TestCase):
         alive_color,
         glow_indexes=None,
         radius_scale=0.32,
+        glow_color=(245, 245, 245),
+        glow_thickness=2,
     ):
         glow_indexes = glow_indexes or set()
         h, w = frame.shape[:2]
@@ -173,8 +265,8 @@ class DetectorTest(unittest.TestCase):
                     frame,
                     center,
                     radius + max(2, radius // 5),
-                    (245, 245, 245),
-                    2,
+                    glow_color,
+                    glow_thickness,
                 )
             cv2.rectangle(
                 frame,
@@ -183,6 +275,23 @@ class DetectorTest(unittest.TestCase):
                 (20, 20, 20),
                 thickness=-1,
             )
+
+    def _draw_center_weapon(self, frame, config, side, index, color):
+        h, w = frame.shape[:2]
+        xs = (
+            config.hud.friendly_slot_centers_x
+            if side == "friendly"
+            else config.hud.enemy_slot_centers_x
+        )
+        radius = int(config.hud.slot_size * h * 0.32)
+        center = (int(xs[index] * w), int(config.hud.slot_center_y * h))
+        cv2.rectangle(
+            frame,
+            (center[0] - radius // 2, center[1] - radius // 5),
+            (center[0] + radius // 2, center[1] + radius // 5),
+            color,
+            thickness=-1,
+        )
 
     def _draw_x_dead_slot(
         self,

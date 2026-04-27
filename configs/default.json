@@ -6,6 +6,7 @@
     "enemy_slot_centers_x": [0.521, 0.556, 0.591, 0.626]
   },
   "classifier": {
+    "require_hud_presence": true,
     "saturation_threshold": 60,
     "channel_spread_threshold": 35,
     "lab_chroma_threshold": 22.0,
@@ -15,14 +16,25 @@
     "visible_colored_ratio_threshold": 0.22,
     "p90_saturation_threshold": 100,
     "p90_channel_spread_threshold": 70,
-    "min_colored_pixels": 40,
+    "min_colored_pixels": 12,
     "min_colored_area_ratio": 0.012,
-    "inner_ignore_ratio": 0.26,
     "x_mark_value_min": 80,
     "x_mark_saturation_max": 70,
     "x_mark_line_ratio_threshold": 0.24,
     "x_mark_contrast_threshold": 0.11,
     "x_mark_band_width": 0.12,
-    "x_mark_max_colored_ratio": 0.62
+    "x_mark_max_colored_ratio": 0.62,
+    "probe_radius_ratio": 0.035,
+    "hud_timer_width_ratio": 0.09,
+    "hud_timer_height_ratio": 0.06,
+    "hud_timer_bright_value_min": 185,
+    "hud_timer_bright_saturation_max": 95,
+    "hud_timer_dark_value_max": 60,
+    "hud_timer_bright_ratio_threshold": 0.045,
+    "hud_timer_dark_ratio_threshold": 0.16,
+    "hud_timer_edge_ratio_threshold": 0.07,
+    "hud_team_hue_slots_min": 2,
+    "hud_min_alive_slots": 1,
+    "hud_min_team_hue_distance": 25.0
   }
 }

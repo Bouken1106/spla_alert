@@ -20,6 +20,11 @@ _CLASSIFIER_INT_FIELDS = (
     "p90_saturation_threshold",
     "p90_channel_spread_threshold",
     "min_colored_pixels",
+    "hud_timer_bright_value_min",
+    "hud_timer_bright_saturation_max",
+    "hud_timer_dark_value_max",
+    "hud_team_hue_slots_min",
+    "hud_min_alive_slots",
 )
 _CLASSIFIER_FLOAT_FIELDS = (
     "lab_chroma_threshold",
@@ -27,11 +32,20 @@ _CLASSIFIER_FLOAT_FIELDS = (
     "weak_colored_ratio_threshold",
     "visible_colored_ratio_threshold",
     "min_colored_area_ratio",
-    "inner_ignore_ratio",
     "x_mark_line_ratio_threshold",
     "x_mark_contrast_threshold",
     "x_mark_band_width",
     "x_mark_max_colored_ratio",
+    "probe_radius_ratio",
+    "hud_timer_width_ratio",
+    "hud_timer_height_ratio",
+    "hud_timer_bright_ratio_threshold",
+    "hud_timer_dark_ratio_threshold",
+    "hud_timer_edge_ratio_threshold",
+    "hud_min_team_hue_distance",
+)
+_CLASSIFIER_BOOL_FIELDS = (
+    "require_hud_presence",
 )
 
 
@@ -45,6 +59,7 @@ class HudConfig:
 
 @dataclass(frozen=True)
 class ClassifierConfig:
+    require_hud_presence: bool = True
     saturation_threshold: int = 60
     channel_spread_threshold: int = 35
     lab_chroma_threshold: float = 22.0
@@ -54,15 +69,26 @@ class ClassifierConfig:
     visible_colored_ratio_threshold: float = 0.22
     p90_saturation_threshold: int = 100
     p90_channel_spread_threshold: int = 70
-    min_colored_pixels: int = 40
+    min_colored_pixels: int = 12
     min_colored_area_ratio: float = 0.012
-    inner_ignore_ratio: float = 0.26
     x_mark_value_min: int = 80
     x_mark_saturation_max: int = 70
     x_mark_line_ratio_threshold: float = 0.24
     x_mark_contrast_threshold: float = 0.11
     x_mark_band_width: float = 0.12
     x_mark_max_colored_ratio: float = 0.62
+    probe_radius_ratio: float = 0.035
+    hud_timer_width_ratio: float = 0.09
+    hud_timer_height_ratio: float = 0.06
+    hud_timer_bright_value_min: int = 185
+    hud_timer_bright_saturation_max: int = 95
+    hud_timer_dark_value_max: int = 60
+    hud_timer_bright_ratio_threshold: float = 0.045
+    hud_timer_dark_ratio_threshold: float = 0.16
+    hud_timer_edge_ratio_threshold: float = 0.07
+    hud_team_hue_slots_min: int = 2
+    hud_min_alive_slots: int = 1
+    hud_min_team_hue_distance: float = 25.0
 
 
 @dataclass(frozen=True)
@@ -113,6 +139,7 @@ def _load_classifier(
     overrides: dict[str, Any] = {}
     overrides.update(_coerced_overrides(raw, _CLASSIFIER_INT_FIELDS, int))
     overrides.update(_coerced_overrides(raw, _CLASSIFIER_FLOAT_FIELDS, float))
+    overrides.update(_coerced_overrides(raw, _CLASSIFIER_BOOL_FIELDS, _coerce_bool))
     return replace(default, **overrides)
 
 
@@ -122,6 +149,14 @@ def _coerced_overrides(
     coerce: Callable[[Any], Any],
 ) -> dict[str, Any]:
     return {name: coerce(raw[name]) for name in field_names if name in raw}
+
+
+def _coerce_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes", "on")
+    return bool(value)
 
 
 def _slot_centers(value: Any, field_name: str) -> SlotCenters:
