@@ -25,10 +25,14 @@ class OpenCvFrameSource:
         height: int | None = None,
         fps: float | None = None,
         buffer_size: int | None = 1,
+        fourcc: str | None = None,
     ):
-        self.cap = cv2.VideoCapture(source)
+        backend = cv2.CAP_V4L2 if _is_v4l2_device(source) else cv2.CAP_ANY
+        self.cap = cv2.VideoCapture(source, backend)
         if buffer_size is not None and buffer_size > 0:
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
+        if fourcc:
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc))
         if width is not None:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         if height is not None:
@@ -95,6 +99,7 @@ def create_source(
     height: int | None = None,
     fps: float | None = None,
     buffer_size: int | None = 1,
+    fourcc: str | None = None,
 ) -> FrameSource:
     if source.startswith("screen"):
         return ScreenFrameSource(_parse_screen_region(source))
@@ -104,6 +109,7 @@ def create_source(
         height,
         fps,
         buffer_size,
+        _normalize_fourcc(fourcc),
     )
 
 
@@ -121,6 +127,21 @@ def _parse_opencv_source(source: str) -> int | str:
         return int(source)
     except ValueError:
         return source
+
+
+def _normalize_fourcc(fourcc: str | None) -> str | None:
+    if fourcc is None:
+        return None
+    normalized = fourcc.strip().upper()
+    if not normalized:
+        return None
+    if len(normalized) != 4:
+        raise ValueError("--fourcc must be exactly 4 characters, for example MJPG")
+    return normalized
+
+
+def _is_v4l2_device(source: int | str) -> bool:
+    return isinstance(source, str) and source.startswith("/dev/video")
 
 
 def _parse_screen_region(source: str) -> ScreenRegion | None:

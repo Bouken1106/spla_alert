@@ -53,6 +53,12 @@ spla-alert devices
 spla-alert run --source /dev/video0 --width 1920 --height 1080 --fps 60
 ```
 
+AVerMedia のUVC入力で 1080p60 が不安定な場合は、MJPG を明示すると安定することがあります。
+
+```bash
+spla-alert run --source /dev/video0 --width 1920 --height 1080 --fps 60 --fourcc MJPG
+```
+
 `/dev/video*` や RTMP/RTSP 入力では、OpenCV の入力バッファを小さくして遅延を減らすため、デフォルトで `--buffer-size 1` を指定した扱いになります。環境によって映像が不安定な場合だけ値を大きくしてください。
 
 ### 2. ReCentral から Ubuntu の RTMP サーバーへ配信する場合
@@ -156,6 +162,18 @@ spla-alert snapshot --source /dev/video0 --output snapshot_overlay.jpg
 ```
 
 `snapshot_overlay.jpg` を開き、8個の枠が上部のイカ/タコアイコンに重なっているか確認します。ずれている場合は `configs/default.json` をコピーして調整します。
+
+判定の詳細を見たい場合は、JSON と各アイコンの切り出しも保存できます。
+
+```bash
+spla-alert snapshot \
+  --source /dev/video0 \
+  --output snapshot_overlay.jpg \
+  --json-output snapshot_result.json \
+  --crops-dir snapshot_slots
+```
+
+`snapshot_result.json` には各スロットの色付きピクセル比率、見えている領域、支配的な色相などが入ります。`snapshot_slots/` には `friendly_1_alive.jpg` のような名前で8個の切り出し画像が保存されます。枠位置やしきい値の調整時は、この2つを見ながら変更してください。
 
 ```bash
 cp configs/default.json configs/my_capture.json

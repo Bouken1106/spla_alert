@@ -49,6 +49,16 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     _add_source_args(snapshot)
     snapshot.add_argument("--output", default="snapshot_overlay.jpg")
+    snapshot.add_argument(
+        "--json-output",
+        default=None,
+        help="optional path to save the detailed snapshot result as JSON",
+    )
+    snapshot.add_argument(
+        "--crops-dir",
+        default=None,
+        help="optional directory to save the 8 detected slot crops",
+    )
     snapshot.set_defaults(command="snapshot")
 
     run = subparsers.add_parser("run", help="count alive icons in realtime")
@@ -94,6 +104,11 @@ def _add_source_args(parser: argparse.ArgumentParser) -> None:
         default=1,
         help="OpenCV capture buffer size for /dev/video* or stream sources",
     )
+    parser.add_argument(
+        "--fourcc",
+        default=None,
+        help="optional 4-character capture format for /dev/video*, for example MJPG",
+    )
 
 
 def _devices() -> int:
@@ -119,6 +134,11 @@ def _snapshot(args: argparse.Namespace) -> int:
         if not cv2.imwrite(str(output), overlay):
             print(f"failed to write {output}", file=sys.stderr)
             return 1
+        if args.json_output is not None:
+            _save_json_result(result, Path(args.json_output))
+        if args.crops_dir is not None:
+            if not _save_slot_crops(frame, result, Path(args.crops_dir)):
+                return 1
         print(f"saved {output}")
         print(_format_result(result))
         return 0
@@ -168,6 +188,7 @@ def _detection_runtime(args: argparse.Namespace) -> Iterator[DetectionRuntime]:
         args.height,
         args.fps,
         args.buffer_size,
+        args.fourcc,
     )
     try:
         yield DetectionRuntime(SplatoonHudDetector(config), source)
@@ -195,6 +216,28 @@ def _format_result(result: CountResult) -> str:
         f"{timestamp} frame={result.frame_index} "
         f"friendly={result.friendly_alive}/4 enemy={result.enemy_alive}/4"
     )
+
+
+def _save_json_result(result: CountResult, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(result.to_dict(), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _save_slot_crops(frame, result: CountResult, crops_dir: Path) -> bool:
+    crops_dir.mkdir(parents=True, exist_ok=True)
+    ok = True
+    for slot in result.slots:
+        x1, y1, x2, y2 = slot.bbox
+        state = "alive" if slot.alive else "dead"
+        filename = f"{slot.side}_{slot.index + 1}_{state}.jpg"
+        crop = frame[y1:y2, x1:x2]
+        if not cv2.imwrite(str(crops_dir / filename), crop):
+            print(f"failed to write {crops_dir / filename}", file=sys.stderr)
+            ok = False
+    return ok
 
 
 if __name__ == "__main__":
