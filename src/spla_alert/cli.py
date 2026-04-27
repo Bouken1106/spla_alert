@@ -8,10 +8,12 @@ import json
 import sys
 import time
 from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 import cv2
 
-from .config import load_config
+from .config import AppConfig, HudConfig, load_config
 from .detector import CountResult, SplatoonHudDetector, draw_overlay
 from .source import FrameSource, create_source, list_video_devices
 
@@ -20,6 +22,16 @@ from .source import FrameSource, create_source, list_video_devices
 class DetectionRuntime:
     detector: SplatoonHudDetector
     source: FrameSource
+
+
+@dataclass(frozen=True)
+class WebFixture:
+    name: str
+    url: str
+    source_page: str
+    expected_friendly: int
+    expected_enemy: int
+    config: AppConfig
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -32,6 +44,8 @@ def main(argv: list[str] | None = None) -> int:
         return _snapshot(args)
     if args.command == "run":
         return _run(args)
+    if args.command == "webtest":
+        return _webtest(args)
 
     parser.print_help()
     return 2
@@ -77,6 +91,17 @@ def _build_parser() -> argparse.ArgumentParser:
         help="stop after N captured frames; 0 means forever",
     )
     run.set_defaults(command="run")
+
+    webtest = subparsers.add_parser(
+        "webtest",
+        help="download public Splatoon screenshots and validate detector output",
+    )
+    webtest.add_argument(
+        "--output-dir",
+        default="webtest_outputs",
+        help="directory for downloaded images, overlays, and JSON results",
+    )
+    webtest.set_defaults(command="webtest")
 
     return parser
 
@@ -179,6 +204,56 @@ def _run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _webtest(args: argparse.Namespace) -> int:
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    failures = 0
+
+    for fixture in _web_fixtures():
+        image_path = output_dir / f"{fixture.name}{_url_suffix(fixture.url)}"
+        overlay_path = output_dir / f"{fixture.name}_overlay.jpg"
+        json_path = output_dir / f"{fixture.name}.json"
+
+        try:
+            _download_file(fixture.url, image_path)
+        except OSError as exc:
+            print(f"FAIL {fixture.name}: download failed: {exc}", file=sys.stderr)
+            failures += 1
+            continue
+
+        frame = cv2.imread(str(image_path))
+        if frame is None:
+            print(f"FAIL {fixture.name}: OpenCV could not read {image_path}")
+            failures += 1
+            continue
+
+        result = SplatoonHudDetector(fixture.config).count(frame)
+        overlay = draw_overlay(frame, result)
+        if not cv2.imwrite(str(overlay_path), overlay):
+            print(f"FAIL {fixture.name}: failed to write {overlay_path}")
+            failures += 1
+            continue
+        _save_json_result(result, json_path)
+
+        ok = (
+            result.friendly_alive == fixture.expected_friendly
+            and result.enemy_alive == fixture.expected_enemy
+        )
+        status = "PASS" if ok else "FAIL"
+        print(
+            f"{status} {fixture.name}: "
+            f"friendly={result.friendly_alive}/4 "
+            f"enemy={result.enemy_alive}/4 "
+            f"expected={fixture.expected_friendly}/4,{fixture.expected_enemy}/4"
+        )
+        print(f"  source: {fixture.source_page}")
+        print(f"  overlay: {overlay_path}")
+        if not ok:
+            failures += 1
+
+    return 1 if failures else 0
+
+
 @contextmanager
 def _detection_runtime(args: argparse.Namespace) -> Iterator[DetectionRuntime]:
     config = load_config(args.config)
@@ -238,6 +313,51 @@ def _save_slot_crops(frame, result: CountResult, crops_dir: Path) -> bool:
             print(f"failed to write {crops_dir / filename}", file=sys.stderr)
             ok = False
     return ok
+
+
+def _download_file(url: str, path: Path) -> None:
+    request = Request(url, headers={"User-Agent": "spla-alert/0.1"})
+    with urlopen(request, timeout=30) as response:
+        path.write_bytes(response.read())
+
+
+def _url_suffix(url: str) -> str:
+    suffix = Path(urlparse(url).path).suffix
+    return suffix if suffix else ".jpg"
+
+
+def _web_fixtures() -> tuple[WebFixture, ...]:
+    return (
+        WebFixture(
+            name="inkipedia_s3_replay",
+            url=(
+                "https://cdn.wikimg.net/en/splatoonwiki/images/0/08/"
+                "S3_Replay_screenshot_JP.jpg"
+            ),
+            source_page="https://splatoonwiki.org/wiki/File:S3_Replay_screenshot_JP.jpg",
+            expected_friendly=4,
+            expected_enemy=4,
+            config=AppConfig(),
+        ),
+        WebFixture(
+            name="reddit_s2_hud_dead_icon",
+            url="https://i.redd.it/30jyv2i5hrb81.jpg",
+            source_page=(
+                "https://www.reddit.com/r/splatoon/comments/s49930/"
+                "what_do_the_squid_icons_at_the_top_mean/"
+            ),
+            expected_friendly=3,
+            expected_enemy=4,
+            config=AppConfig(
+                hud=HudConfig(
+                    slot_center_y=0.50,
+                    slot_size=0.78,
+                    friendly_slot_centers_x=(0.04, 0.16, 0.28, 0.38),
+                    enemy_slot_centers_x=(0.63, 0.73, 0.84, 0.94),
+                )
+            ),
+        ),
+    )
 
 
 if __name__ == "__main__":

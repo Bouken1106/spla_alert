@@ -42,6 +42,9 @@ class ConfigTest(unittest.TestCase):
                     "channel_spread_threshold": "45",
                     "visible_colored_ratio_threshold": "0.3",
                     "inner_ignore_ratio": 0.2,
+                    "x_mark_saturation_max": "65",
+                    "x_mark_contrast_threshold": "0.12",
+                    "x_mark_max_colored_ratio": "0.58",
                 }
             }
         )
@@ -51,6 +54,9 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(config.classifier.channel_spread_threshold, 45)
         self.assertEqual(config.classifier.visible_colored_ratio_threshold, 0.3)
         self.assertEqual(config.classifier.inner_ignore_ratio, 0.2)
+        self.assertEqual(config.classifier.x_mark_saturation_max, 65)
+        self.assertEqual(config.classifier.x_mark_contrast_threshold, 0.12)
+        self.assertEqual(config.classifier.x_mark_max_colored_ratio, 0.58)
         self.assertEqual(
             config.classifier.saturation_threshold,
             AppConfig().classifier.saturation_threshold,

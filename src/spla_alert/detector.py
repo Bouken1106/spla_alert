@@ -25,6 +25,8 @@ class _SlotColorMetrics:
     visible_pixels: int
     score_pixels: int
     dominant_hue: float | None
+    x_mark_score: float
+    x_mark_min_line_ratio: float
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,8 @@ class SlotStatus:
     visible_pixels: int
     score_pixels: int
     dominant_hue: float | None
+    x_mark_score: float
+    x_mark_min_line_ratio: float
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -58,6 +62,8 @@ class SlotStatus:
             "dominant_hue": (
                 None if self.dominant_hue is None else round(self.dominant_hue, 1)
             ),
+            "x_mark_score": round(self.x_mark_score, 4),
+            "x_mark_min_line_ratio": round(self.x_mark_min_line_ratio, 4),
         }
 
 
@@ -167,6 +173,7 @@ def _measure_slot_color(crop: np.ndarray, cfg: ClassifierConfig) -> _SlotColorMe
         cfg,
     )
     colored_pixels = int(colored_mask.sum())
+    x_mark_score, x_mark_min_line_ratio = _x_mark_score(crop, cfg)
 
     return _SlotColorMetrics(
         colored_ratio=colored_pixels / score_pixels,
@@ -177,6 +184,8 @@ def _measure_slot_color(crop: np.ndarray, cfg: ClassifierConfig) -> _SlotColorMe
         visible_pixels=visible_pixels,
         score_pixels=score_pixels,
         dominant_hue=_dominant_hue(hsv[:, :, 0][colored_mask]),
+        x_mark_score=x_mark_score,
+        x_mark_min_line_ratio=x_mark_min_line_ratio,
     )
 
 
@@ -194,6 +203,13 @@ def _colored_pixel_mask(
 
 def _is_alive(metrics: _SlotColorMetrics, cfg: ClassifierConfig) -> bool:
     if metrics.score_pixels == 0 or metrics.visible_pixels == 0:
+        return False
+
+    if (
+        metrics.x_mark_score >= cfg.x_mark_contrast_threshold
+        and metrics.x_mark_min_line_ratio >= cfg.x_mark_line_ratio_threshold
+        and metrics.colored_ratio <= cfg.x_mark_max_colored_ratio
+    ):
         return False
 
     min_colored_pixels = max(
@@ -237,6 +253,8 @@ def _slot_status(
         visible_pixels=metrics.visible_pixels,
         score_pixels=metrics.score_pixels,
         dominant_hue=metrics.dominant_hue,
+        x_mark_score=metrics.x_mark_score,
+        x_mark_min_line_ratio=metrics.x_mark_min_line_ratio,
     )
 
 
@@ -252,7 +270,47 @@ def _empty_color_metrics(
         visible_pixels=visible_pixels,
         score_pixels=score_pixels,
         dominant_hue=None,
+        x_mark_score=0.0,
+        x_mark_min_line_ratio=0.0,
     )
+
+
+def _x_mark_score(crop: np.ndarray, cfg: ClassifierConfig) -> tuple[float, float]:
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    pale_mask = (value >= cfg.x_mark_value_min) & (
+        saturation <= cfg.x_mark_saturation_max
+    )
+
+    main, anti, outside = _x_mark_masks(crop.shape[:2], cfg.x_mark_band_width)
+    main_ratio = _mask_ratio(pale_mask, main)
+    anti_ratio = _mask_ratio(pale_mask, anti)
+    outside_ratio = _mask_ratio(pale_mask, outside)
+    min_line_ratio = min(main_ratio, anti_ratio)
+    return max(0.0, min_line_ratio - outside_ratio), min_line_ratio
+
+
+def _x_mark_masks(
+    shape: tuple[int, int], band_width: float
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    height, width = shape
+    yy, xx = np.mgrid[:height, :width]
+    normalized_x = (xx + 0.5) / max(width, 1)
+    normalized_y = (yy + 0.5) / max(height, 1)
+
+    main = np.abs(normalized_y - normalized_x) <= band_width
+    anti = np.abs((normalized_y + normalized_x) - 1.0) <= band_width
+    ellipse = _ellipse_mask(shape)
+    line_mask = (main | anti) & ellipse
+    return main & ellipse, anti & ellipse, ellipse & ~line_mask
+
+
+def _mask_ratio(source_mask: np.ndarray, target_mask: np.ndarray) -> float:
+    target_pixels = int(target_mask.sum())
+    if target_pixels == 0:
+        return 0.0
+    return float((source_mask & target_mask).sum() / target_pixels)
 
 
 def draw_overlay(frame: np.ndarray, result: CountResult) -> np.ndarray:

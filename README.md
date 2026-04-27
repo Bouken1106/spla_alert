@@ -8,6 +8,7 @@ Splatoon の配信画面から、画面中央上部の味方4人・敵4人のイ
 - 味方最大4人、敵最大4人をカウント
 - 生存アイコンは色付き、デス中アイコンは灰色として判定
 - 中央のブキ表示やスペシャル発光の白っぽいハイライトを避けるため、アイコン外周寄りの色成分を優先して判定
+- Xマーク付きのデス/切断アイコンは、ブキ色が残っていてもデス扱い
 - アイコンサイズの変化に対応するため、各枠を相対座標で切り出し、見えている領域内の色比率も使って判定
 - AverMedia/ReCentral の映像を Ubuntu 側に持ってきた入力を読み取り
 - ブキ種別、スペシャル発光の識別は未実装。ただし発光していても「生存」として扱う想定
@@ -174,6 +175,7 @@ spla-alert snapshot \
 ```
 
 `snapshot_result.json` には各スロットの色付きピクセル比率、見えている領域、支配的な色相などが入ります。`snapshot_slots/` には `friendly_1_alive.jpg` のような名前で8個の切り出し画像が保存されます。枠位置やしきい値の調整時は、この2つを見ながら変更してください。
+`x_mark_score` と `x_mark_min_line_ratio` は、灰色/白のXマークらしさを示すデバッグ値です。
 
 ```bash
 cp configs/default.json configs/my_capture.json
@@ -190,6 +192,7 @@ cp configs/default.json configs/my_capture.json
 - `lab_chroma_threshold`: Lab 色空間の色度下限。彩度だけでは拾いにくい色を補助
 - `visible_colored_ratio_threshold`: 明るく見えている領域のうち、色付きとみなす割合
 - `inner_ignore_ratio`: 中央のブキ表示をどの程度無視するか。値を大きくすると外周寄りだけを見る
+- `x_mark_*`: デス/切断時のXマーク検出。ブキ色が残るアイコンを生存と誤判定する場合に調整
 
 調整した設定で実行します。
 
@@ -204,6 +207,29 @@ spla-alert run --source /dev/video0 --config configs/my_capture.json --show
 ブキ表示はアイコン中央に重なるため、判定では中央を少し無視して外周寄りを重視します。スペシャル発光は白っぽいハイライトとして入ることがありますが、白は色付きピクセルとして扱わず、残っているチーム色部分で生存判定します。
 
 試合ごとに味方色・敵色が変わっても、色そのものを固定していないため動きます。味方と敵の色が必ず異なることは、今後スペシャルやブキ識別を追加するときの追加情報として使えます。
+
+デス/切断時にXマークが重なる場合は、低彩度で明るい斜め線が2本あるかを追加で見ます。これにより、切断表示などでブキ色が一部残っていても生存として数えにくくしています。
+
+## ネット上の実画像で検証
+
+公開されている Splatoon のスクリーンショットをダウンロードして、期待値と照合できます。ネット接続が必要です。画像そのものは著作権付きのため、リポジトリには含めず、指定した出力先にだけ保存します。
+
+```bash
+PYTHONPATH=src python -m spla_alert.cli webtest --output-dir /tmp/spla_alert_webtest
+```
+
+editable install 済みなら次でも動きます。
+
+```bash
+spla-alert webtest --output-dir /tmp/spla_alert_webtest
+```
+
+現在の検証セット:
+
+- Inkipedia の Splatoon 3 リプレイスクリーンショット: `friendly=4/4 enemy=4/4`
+- Reddit の上部HUDクロップ: Xマーク付きの左1人をデス扱いし、`friendly=3/4 enemy=4/4`
+
+実行後、`*_overlay.jpg` で枠位置と判定、`*.json` で各スロットの指標を確認できます。
 
 ## テスト
 

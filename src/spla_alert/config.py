@@ -15,6 +15,8 @@ _CLASSIFIER_INT_FIELDS = (
     "saturation_threshold",
     "channel_spread_threshold",
     "value_min",
+    "x_mark_value_min",
+    "x_mark_saturation_max",
     "p90_saturation_threshold",
     "p90_channel_spread_threshold",
     "min_colored_pixels",
@@ -26,6 +28,10 @@ _CLASSIFIER_FLOAT_FIELDS = (
     "visible_colored_ratio_threshold",
     "min_colored_area_ratio",
     "inner_ignore_ratio",
+    "x_mark_line_ratio_threshold",
+    "x_mark_contrast_threshold",
+    "x_mark_band_width",
+    "x_mark_max_colored_ratio",
 )
 
 
@@ -51,6 +57,12 @@ class ClassifierConfig:
     min_colored_pixels: int = 40
     min_colored_area_ratio: float = 0.012
     inner_ignore_ratio: float = 0.26
+    x_mark_value_min: int = 80
+    x_mark_saturation_max: int = 70
+    x_mark_line_ratio_threshold: float = 0.24
+    x_mark_contrast_threshold: float = 0.11
+    x_mark_band_width: float = 0.12
+    x_mark_max_colored_ratio: float = 0.62
 
 
 @dataclass(frozen=True)

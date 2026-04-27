@@ -95,6 +95,31 @@ class DetectorTest(unittest.TestCase):
         self.assertEqual(result.friendly_alive, 0)
         self.assertEqual(result.enemy_alive, 0)
 
+    def test_x_marked_icon_with_colored_weapon_is_dead(self):
+        config = AppConfig()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+
+        self._draw_slots(frame, config, "friendly", {1, 2, 3}, (40, 230, 80))
+        self._draw_slots(frame, config, "enemy", {0, 1, 2, 3}, (230, 40, 190))
+        self._draw_x_dead_slot(
+            frame,
+            config,
+            "friendly",
+            0,
+            background_color=(240, 40, 200),
+            weapon_color=(40, 230, 80),
+        )
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertEqual(result.friendly_alive, 3)
+        self.assertEqual(result.enemy_alive, 4)
+        self.assertFalse(result.slots[0].alive)
+        self.assertGreater(
+            result.slots[0].x_mark_score,
+            config.classifier.x_mark_contrast_threshold,
+        )
+
     def test_smaller_advantage_icons_are_still_counted(self):
         config = AppConfig()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -158,6 +183,54 @@ class DetectorTest(unittest.TestCase):
                 (20, 20, 20),
                 thickness=-1,
             )
+
+    def _draw_x_dead_slot(
+        self,
+        frame,
+        config,
+        side,
+        index,
+        background_color,
+        weapon_color,
+    ):
+        h, w = frame.shape[:2]
+        xs = (
+            config.hud.friendly_slot_centers_x
+            if side == "friendly"
+            else config.hud.enemy_slot_centers_x
+        )
+        size = int(config.hud.slot_size * h)
+        center = (int(xs[index] * w), int(config.hud.slot_center_y * h))
+        x1 = max(0, center[0] - size // 2)
+        y1 = max(0, center[1] - size // 2)
+        x2 = min(w, x1 + size)
+        y2 = min(h, y1 + size)
+        radius = int(config.hud.slot_size * h * 0.32)
+
+        frame[y1:y2, x1:x2] = background_color
+        cv2.circle(frame, center, radius, (12, 12, 12), thickness=-1)
+        cv2.rectangle(
+            frame,
+            (center[0] - radius // 2, center[1] - radius // 5),
+            (center[0] + radius // 2, center[1] + radius // 5),
+            weapon_color,
+            thickness=-1,
+        )
+        thickness = max(4, radius // 4)
+        cv2.line(
+            frame,
+            (center[0] - radius, center[1] - radius),
+            (center[0] + radius, center[1] + radius),
+            (165, 165, 165),
+            thickness,
+        )
+        cv2.line(
+            frame,
+            (center[0] + radius, center[1] - radius),
+            (center[0] - radius, center[1] + radius),
+            (165, 165, 165),
+            thickness,
+        )
 
 
 if __name__ == "__main__":

@@ -17,6 +17,12 @@
     "p90_channel_spread_threshold": 70,
     "min_colored_pixels": 40,
     "min_colored_area_ratio": 0.012,
-    "inner_ignore_ratio": 0.26
+    "inner_ignore_ratio": 0.26,
+    "x_mark_value_min": 80,
+    "x_mark_saturation_max": 70,
+    "x_mark_line_ratio_threshold": 0.24,
+    "x_mark_contrast_threshold": 0.11,
+    "x_mark_band_width": 0.12,
+    "x_mark_max_colored_ratio": 0.62
   }
 }
