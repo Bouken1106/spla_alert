@@ -99,10 +99,10 @@ class ClassifierConfig:
     min_colored_area_ratio: float = 0.012
     x_mark_value_min: int = 80
     x_mark_saturation_max: int = 70
-    x_mark_line_ratio_threshold: float = 0.20
-    x_mark_contrast_threshold: float = 0.09
+    x_mark_line_ratio_threshold: float = 0.15
+    x_mark_contrast_threshold: float = 0.05
     x_mark_band_width: float = 0.12
-    x_mark_max_colored_ratio: float = 0.62
+    x_mark_max_colored_ratio: float = 0.65
     x_mark_dark_value_max: int = 70
     probe_radius_ratio: float = 0.035
     hud_timer_width_ratio: float = 0.09
@@ -110,9 +110,9 @@ class ClassifierConfig:
     hud_timer_bright_value_min: int = 185
     hud_timer_bright_saturation_max: int = 95
     hud_timer_dark_value_max: int = 60
-    hud_timer_bright_ratio_threshold: float = 0.045
+    hud_timer_bright_ratio_threshold: float = 0.03
     hud_timer_dark_ratio_threshold: float = 0.16
-    hud_timer_edge_ratio_threshold: float = 0.07
+    hud_timer_edge_ratio_threshold: float = 0.04
     hud_team_hue_slots_min: int = 2
     hud_min_alive_slots: int = 1
     hud_min_team_hue_distance: float = 25.0

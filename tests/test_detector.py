@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -36,6 +37,26 @@ class FakeWeaponRecognizer:
 
 
 class DetectorTest(unittest.TestCase):
+    def test_real_hud_fixtures_count_labeled_alive_players(self):
+        fixtures = (
+            ("splatoon_hud_friendly1_enemy4.jpg", 1, 4),
+            ("splatoon_hud_friendly1_enemy3.jpg", 1, 3),
+            ("splatoon_hud_friendly2_enemy3.jpg", 2, 3),
+            ("splatoon_hud_friendly2_enemy4.jpg", 2, 4),
+            ("splatoon_hud_friendly3_enemy3_capture2.jpg", 3, 3),
+            ("splatoon_hud_friendly3_enemy4.jpg", 3, 4),
+        )
+        for filename, expected_friendly, expected_enemy in fixtures:
+            with self.subTest(filename=filename):
+                frame = cv2.imread(str(_fixture_path(filename)))
+                self.assertIsNotNone(frame)
+
+                result = SplatoonHudDetector(AppConfig()).count(frame)
+
+                self.assertTrue(result.hud_present)
+                self.assertEqual(result.friendly_alive, expected_friendly)
+                self.assertEqual(result.enemy_alive, expected_enemy)
+
     def test_counts_colored_icons_as_alive_and_gray_icons_as_dead(self):
         config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -262,6 +283,32 @@ class DetectorTest(unittest.TestCase):
         self.assertFalse(result.slots[1].alive)
         self.assertFalse(result.slots[7].alive)
 
+    def test_yellow_timer_hud_counts_shifted_actual_slots(self):
+        config = AppConfig()
+        frame = np.full((720, 1280, 3), (220, 150, 70), dtype=np.uint8)
+        self._draw_yellow_timer(frame, config, "0:22")
+        self._draw_actual_hud_slots(
+            frame,
+            config,
+            "friendly",
+            alive_indexes={1},
+            alive_color=(190, 35, 165),
+            center_xs=(0.305, 0.352, 0.398, 0.438),
+        )
+        self._draw_actual_hud_slots(
+            frame,
+            config,
+            "enemy",
+            alive_indexes={0, 1, 2},
+            alive_color=(35, 210, 60),
+        )
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertTrue(result.hud_present)
+        self.assertEqual(result.friendly_alive, 1)
+        self.assertEqual(result.enemy_alive, 3)
+
     def test_smaller_advantage_icons_are_still_counted(self):
         config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -416,9 +463,10 @@ class DetectorTest(unittest.TestCase):
         side,
         alive_indexes,
         alive_color,
+        center_xs=None,
     ):
         h, w = frame.shape[:2]
-        xs = (
+        xs = center_xs or (
             config.hud.friendly_slot_centers_x
             if side == "friendly"
             else config.hud.enemy_slot_centers_x
@@ -474,6 +522,31 @@ class DetectorTest(unittest.TestCase):
                     (165, 165, 165),
                     max(4, radius // 4),
                 )
+
+    def _draw_yellow_timer(self, frame, config, text):
+        h, w = frame.shape[:2]
+        center = (w // 2, int(config.hud.slot_center_y * h))
+        cv2.rectangle(
+            frame,
+            (center[0] - 55, center[1] - 24),
+            (center[0] + 55, center[1] + 24),
+            (20, 20, 20),
+            thickness=-1,
+        )
+        cv2.putText(
+            frame,
+            text,
+            (center[0] - 38, center[1] + 14),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.9,
+            (0, 240, 245),
+            2,
+            cv2.LINE_AA,
+        )
+
+
+def _fixture_path(filename):
+    return Path(__file__).parent / "fixtures" / filename
 
 
 if __name__ == "__main__":

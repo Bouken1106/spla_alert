@@ -7,7 +7,7 @@ from typing import Any, Iterable, Literal
 import cv2
 import numpy as np
 
-from .config import AppConfig, ClassifierConfig
+from .config import DEFAULT_FRIENDLY_X, AppConfig, ClassifierConfig
 from .weapons import WeaponPrediction, WeaponRecognizer
 
 
@@ -36,6 +36,11 @@ _SLOT_PROBE_OFFSETS = (
     (-0.18, 0.18),
     (0.18, 0.18),
 )
+_FRIENDLY_LEAD_SLOT_CENTERS_X = (0.305, 0.352, 0.398, 0.438)
+_TEAM_COLOR_RESCUE_MIN_ALIVE_SLOTS = 2
+_TEAM_COLOR_RESCUE_MIN_COLORED_RATIO = 0.50
+_TEAM_COLOR_RESCUE_MIN_X_SCORE = 0.12
+_TEAM_COLOR_RESCUE_MAX_HUE_DISTANCE = 22.0
 
 
 @dataclass(frozen=True)
@@ -127,7 +132,9 @@ class SplatoonHudDetector:
         if frame.ndim != 3 or frame.shape[2] != 3:
             raise ValueError("frame must be a BGR image with shape HxWx3")
 
-        slots = tuple(self._classify_slots(frame))
+        slots = _rescue_team_colored_slots(
+            tuple(self._classify_slots(frame)), self.config.classifier
+        )
         hud_present = (
             _hud_present(frame, slots, self.config)
             if self.config.classifier.require_hud_presence
@@ -151,7 +158,35 @@ class SplatoonHudDetector:
         )
 
     def _classify_slots(self, frame: np.ndarray) -> Iterable[SlotStatus]:
-        for side, index, bbox in self._slot_regions(frame.shape):
+        for side, center_x_ratios in (
+            ("friendly", self.config.hud.friendly_slot_centers_x),
+            ("enemy", self.config.hud.enemy_slot_centers_x),
+        ):
+            yield from self._classify_side_slots(frame, side, center_x_ratios)
+
+    def _classify_side_slots(
+        self, frame: np.ndarray, side: Side, center_x_ratios: tuple[float, ...]
+    ) -> tuple[SlotStatus, ...]:
+        candidates = [center_x_ratios]
+        if (
+            side == "friendly"
+            and center_x_ratios == DEFAULT_FRIENDLY_X
+            and self.config.classifier.require_hud_presence
+        ):
+            candidates.append(_FRIENDLY_LEAD_SLOT_CENTERS_X)
+
+        classified = tuple(
+            tuple(self._classify_slot_regions(frame, side, candidate))
+            for candidate in candidates
+        )
+        return max(classified, key=_slot_layout_score)
+
+    def _classify_slot_regions(
+        self, frame: np.ndarray, side: Side, center_x_ratios: tuple[float, ...]
+    ) -> Iterable[SlotStatus]:
+        for index, bbox in enumerate(
+            self._slot_bboxes(frame.shape, center_x_ratios)
+        ):
             yield self._classify_slot(_crop(frame, bbox), side, index, bbox)
 
     def _slot_regions(self, frame_shape: tuple[int, int, int]) -> Iterable[SlotRegion]:
@@ -159,8 +194,16 @@ class SplatoonHudDetector:
             ("friendly", self.config.hud.friendly_slot_centers_x),
             ("enemy", self.config.hud.enemy_slot_centers_x),
         ):
-            for index, center_x_ratio in enumerate(center_x_ratios):
-                yield side, index, self._slot_bbox(frame_shape, center_x_ratio)
+            for index, bbox in enumerate(
+                self._slot_bboxes(frame_shape, center_x_ratios)
+            ):
+                yield side, index, bbox
+
+    def _slot_bboxes(
+        self, frame_shape: tuple[int, int, int], center_x_ratios: tuple[float, ...]
+    ) -> Iterable[BBox]:
+        for center_x_ratio in center_x_ratios:
+            yield self._slot_bbox(frame_shape, center_x_ratio)
 
     def _slot_bbox(
         self, frame_shape: tuple[int, int, int], center_x_ratio: float
@@ -304,6 +347,54 @@ def _is_alive(metrics: _SlotColorMetrics, cfg: ClassifierConfig) -> bool:
     return strong_area_match or strong_visible_match or weak_but_saturated
 
 
+def _slot_layout_score(slots: tuple[SlotStatus, ...]) -> float:
+    return sum(slot.x_mark_score for slot in slots)
+
+
+def _rescue_team_colored_slots(
+    slots: tuple[SlotStatus, ...], cfg: ClassifierConfig
+) -> tuple[SlotStatus, ...]:
+    rescued = slots
+    for side in ("friendly", "enemy"):
+        hue = _side_reliable_alive_hue(rescued, side, cfg)
+        if hue is None:
+            continue
+        rescued = tuple(
+            replace(slot, alive=True)
+            if slot.side == side and _should_rescue_team_colored_slot(slot, hue)
+            else slot
+            for slot in rescued
+        )
+    return rescued
+
+
+def _side_reliable_alive_hue(
+    slots: tuple[SlotStatus, ...], side: Side, cfg: ClassifierConfig
+) -> float | None:
+    hues = [
+        slot.dominant_hue
+        for slot in slots
+        if slot.side == side
+        and slot.alive
+        and slot.dominant_hue is not None
+        and slot.x_mark_score < cfg.x_mark_contrast_threshold
+    ]
+    if len(hues) < _TEAM_COLOR_RESCUE_MIN_ALIVE_SLOTS:
+        return None
+    return _circular_mean(tuple(hues))
+
+
+def _should_rescue_team_colored_slot(slot: SlotStatus, team_hue: float) -> bool:
+    return (
+        not slot.alive
+        and slot.dominant_hue is not None
+        and slot.colored_ratio >= _TEAM_COLOR_RESCUE_MIN_COLORED_RATIO
+        and slot.x_mark_score >= _TEAM_COLOR_RESCUE_MIN_X_SCORE
+        and _hue_distance(slot.dominant_hue, team_hue)
+        <= _TEAM_COLOR_RESCUE_MAX_HUE_DISTANCE
+    )
+
+
 def _hud_present(
     frame: np.ndarray, slots: tuple[SlotStatus, ...], config: AppConfig
 ) -> bool:
@@ -333,14 +424,22 @@ def _timer_present(frame: np.ndarray, config: AppConfig) -> bool:
 
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
     saturation = hsv[:, :, 1]
+    hue = hsv[:, :, 0]
     value = hsv[:, :, 2]
     bright_timer_pixels = (value >= cfg.hud_timer_bright_value_min) & (
         saturation <= cfg.hud_timer_bright_saturation_max
     )
+    yellow_timer_pixels = (
+        (value >= cfg.hud_timer_bright_value_min)
+        & (saturation >= cfg.hud_timer_bright_saturation_max)
+        & (hue >= 20)
+        & (hue <= 45)
+    )
     dark_timer_pixels = value <= cfg.hud_timer_dark_value_max
     center_edges = _timer_center_edge_ratio(crop)
     return (
-        float(bright_timer_pixels.mean()) >= cfg.hud_timer_bright_ratio_threshold
+        float((bright_timer_pixels | yellow_timer_pixels).mean())
+        >= cfg.hud_timer_bright_ratio_threshold
         and float(dark_timer_pixels.mean()) >= cfg.hud_timer_dark_ratio_threshold
         and center_edges >= cfg.hud_timer_edge_ratio_threshold
     )
