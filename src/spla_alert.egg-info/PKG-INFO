@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: spla-alert
+Version: 0.1.0
+Summary: Realtime Splatoon ally/enemy alive counter from stream or capture input.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.24
+Requires-Dist: opencv-python>=4.8
+Requires-Dist: mss>=9.0
+
 # spla_alert
 
 Splatoon の配信画面から、画面中央上部の味方4人・敵4人のイカ/タコアイコンを読み取り、生存人数をリアルタイムに数えるツールです。
@@ -66,83 +76,13 @@ spla-alert run --source /dev/video0 --width 1920 --height 1080 --fps 60 --fourcc
 
 ### 2. ReCentral から Ubuntu の RTMP サーバーへ配信する場合
 
-ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。この例では MediaMTX を RTMP サーバーとして使い、`rtmp/poke` というパスに配信します。
-
-#### MediaMTX を Docker で起動する
-
-Ubuntu 側で Docker が使える場合は、設定ファイルなしで起動できます。この用途では RTMP だけを使うため、`1935` 番ポートだけを公開します。
-
-手元で動作確認しながら起動する場合:
-
-```bash
-docker run --rm -it --name mediamtx -p 1935:1935 bluenviron/mediamtx:1
-```
-
-ログに `[RTMP] listener opened on :1935` のような行が出れば待ち受け中です。停止するときは `Ctrl+C` を押します。
-
-常駐させる場合:
-
-```bash
-docker run -d --name mediamtx -p 1935:1935 --restart unless-stopped bluenviron/mediamtx:1
-docker logs -f mediamtx
-```
-
-常駐コンテナを止める、または再開する場合:
-
-```bash
-docker stop mediamtx
-docker start mediamtx
-```
-
-作り直す場合は、止めてから削除します。
-
-```bash
-docker stop mediamtx
-docker rm mediamtx
-```
-
-Docker の権限エラーが出る場合は、各 `docker` コマンドの先頭に `sudo` を付けてください。
-
-起動確認:
-
-```bash
-ss -ltnp | grep ':1935'
-docker ps --filter name=mediamtx
-```
-
-#### ReCentral の配信先
-
-ReCentral から以下の RTMP URL に送ります。
+ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。Ubuntu 側で nginx-rtmp や MediaMTX などの RTMP サーバーを起動し、ReCentral から以下のような URL に送ります。
 
 ```text
-rtmp://<UbuntuのIP>:1935/rtmp/poke
+rtmp://<UbuntuのIP>/live/splatoon
 ```
 
-ReCentral の配信先を URL とストリームキーに分けて入力する画面では、URL を `rtmp://<UbuntuのIP>:1935/rtmp`、ストリームキーを `poke` にします。
-
-Ubuntu の IP は Ubuntu 側で確認します。
-
-```bash
-hostname -I
-```
-
-この PC から同じ Ubuntu 上の MediaMTX を読む場合は、`127.0.0.1` を使います。
-
-```bash
-spla-alert run --source rtmp://127.0.0.1:1935/rtmp/poke
-```
-
-1 フレームだけ確認画像を保存する場合:
-
-```bash
-spla-alert snapshot --source rtmp://127.0.0.1:1935/rtmp/poke --output snapshot_overlay.jpg
-```
-
-別 PC の ReCentral から送る場合は `127.0.0.1` ではなく Ubuntu マシンの LAN IP を指定してください。
-
-#### nginx-rtmp を使う場合
-
-MediaMTX ではなく nginx-rtmp を使う場合の設定例:
+Ubuntu 側の nginx-rtmp 設定例:
 
 ```nginx
 rtmp {
@@ -150,13 +90,29 @@ rtmp {
         listen 1935;
         chunk_size 4096;
 
-        application rtmp {
+        application live {
             live on;
             record off;
         }
     }
 }
 ```
+
+ReCentral の配信先を分けて入力する画面では、URL を `rtmp://<UbuntuのIP>/live`、ストリームキーを `splatoon` にします。
+
+Ubuntu の IP は Ubuntu 側で確認します。
+
+```bash
+hostname -I
+```
+
+読み取りは次のようにします。
+
+```bash
+spla-alert run --source rtmp://127.0.0.1/live/splatoon
+```
+
+別 PC の ReCentral から送る場合は `127.0.0.1` ではなく Ubuntu マシンの LAN IP を指定してください。
 
 ### 3. Ubuntu 上に表示されている配信画面を直接読む場合
 
