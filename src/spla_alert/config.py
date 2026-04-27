@@ -129,7 +129,7 @@ class WeaponConfig:
     cache_ttl_hours: int = 24 * 7
     download_timeout_seconds: int = 30
     refresh_cache: bool = False
-    confidence_threshold: float = 0.32
+    confidence_threshold: float = 0.42
     min_edge_ratio: float = 0.01
     crop_left_ratio: float = 0.08
     crop_top_ratio: float = 0.10

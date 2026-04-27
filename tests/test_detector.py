@@ -20,12 +20,16 @@ class FakeWeaponRecognizer:
             score=0.8,
             confidence=0.7,
             image_url="https://example.test/splattershot.png",
+            game="s3",
+            main_key="splattershot",
             candidates=(
                 WeaponCandidate(
                     key="splattershot",
                     name="Splattershot",
                     score=0.8,
                     image_url="https://example.test/splattershot.png",
+                    game="s3",
+                    main_key="splattershot",
                 ),
             ),
         )

@@ -59,10 +59,12 @@ class WeaponRecognizerTest(unittest.TestCase):
             source_html,
             "https://stat.ink/api-info/weapon3",
         )
-        manifest = _manifest_weapons(api_data, urls)
+        manifest = _manifest_weapons(api_data, urls, "s3")
 
         self.assertEqual(len(manifest), 1)
         self.assertEqual(manifest[0]["key"], "splattershot")
+        self.assertEqual(manifest[0]["game"], "s3")
+        self.assertEqual(manifest[0]["main_key"], "splattershot")
         self.assertEqual(
             manifest[0]["image_url"],
             "https://stat.ink/assets/hash/msfoie2j/Shooters/splattershot.png?v=1",
@@ -83,6 +85,8 @@ class WeaponRecognizerTest(unittest.TestCase):
                 name=key,
                 type_key=None,
                 image_url=f"https://example.test/{key}.png",
+                game="s3",
+                main_key=key,
             ),
             edges=edges,
             distance=_distance_from_edges(edges),

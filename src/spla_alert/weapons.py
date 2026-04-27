@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import html
 import json
 from pathlib import Path
@@ -22,6 +22,8 @@ class WeaponInfo:
     name: str
     type_key: str | None
     image_url: str
+    game: str
+    main_key: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -29,6 +31,8 @@ class WeaponInfo:
             "name": self.name,
             "type_key": self.type_key,
             "image_url": self.image_url,
+            "game": self.game,
+            "main_key": self.main_key,
         }
 
 
@@ -38,6 +42,8 @@ class WeaponCandidate:
     name: str
     score: float
     image_url: str
+    game: str
+    main_key: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -45,6 +51,8 @@ class WeaponCandidate:
             "name": self.name,
             "score": round(self.score, 4),
             "image_url": self.image_url,
+            "game": self.game,
+            "main_key": self.main_key,
         }
 
 
@@ -55,6 +63,8 @@ class WeaponPrediction:
     score: float
     confidence: float
     image_url: str
+    game: str
+    main_key: str
     candidates: tuple[WeaponCandidate, ...]
 
     def to_dict(self) -> dict[str, Any]:
@@ -64,6 +74,8 @@ class WeaponPrediction:
             "score": round(self.score, 4),
             "confidence": round(self.confidence, 4),
             "image_url": self.image_url,
+            "game": self.game,
+            "main_key": self.main_key,
             "candidates": [candidate.to_dict() for candidate in self.candidates],
         }
 
@@ -95,18 +107,10 @@ class WeaponRecognizer:
             return None
 
         slot_distance = _distance_from_edges(slot_edges)
-        scores = tuple(
-            _score_template(slot_edges, slot_distance, template)
-            for template in templates
-        )
-        ranked = sorted(
-            zip(templates, scores, strict=True),
-            key=lambda item: item[1],
-            reverse=True,
-        )
+        ranked = _rank_templates(slot_edges, slot_distance, templates)
         top_template, top_score = ranked[0]
-        second_score = ranked[1][1] if len(ranked) > 1 else 0.0
-        confidence = _confidence(top_score, second_score)
+        second_family_score = _second_family_score(ranked, top_template.info)
+        confidence = _confidence(top_score, second_family_score)
         if confidence < self.config.confidence_threshold:
             return None
 
@@ -116,6 +120,8 @@ class WeaponRecognizer:
                 name=template.info.name,
                 score=score,
                 image_url=template.info.image_url,
+                game=template.info.game,
+                main_key=template.info.main_key,
             )
             for template, score in ranked[: max(1, self.config.candidate_count)]
         )
@@ -125,6 +131,8 @@ class WeaponRecognizer:
             score=top_score,
             confidence=confidence,
             image_url=top_template.info.image_url,
+            game=top_template.info.game,
+            main_key=top_template.info.main_key,
             candidates=candidates,
         )
 
@@ -141,26 +149,31 @@ class WeaponRecognizer:
 
 def load_external_weapon_templates(config: WeaponConfig) -> tuple[WeaponTemplate, ...]:
     cache_dir = Path(config.cache_dir).expanduser()
-    manifest = _load_or_fetch_manifest(config, cache_dir)
+    manifest_dirs = _weapon_manifest_dirs(cache_dir)
+    if not manifest_dirs:
+        manifest_dirs = (_default_fetch_dir(cache_dir, config),)
+
     templates: list[WeaponTemplate] = []
-    for info in _weapon_infos(manifest):
-        image_path = _cached_image_path(cache_dir, info.key)
-        if config.refresh_cache or not image_path.exists():
+    loaded_weapons = 0
+    for manifest_dir in manifest_dirs:
+        manifest = _load_or_fetch_manifest(config, manifest_dir)
+        for info in _weapon_infos(manifest):
+            image_path = _cached_image_path(manifest_dir, info.key)
+            if config.refresh_cache or not image_path.exists():
+                try:
+                    _download_file(info.image_url, image_path, config)
+                except OSError:
+                    continue
             try:
-                _download_file(info.image_url, image_path, config)
+                image = _read_image(image_path)
             except OSError:
                 continue
-        try:
-            image = _read_image(image_path)
-        except OSError:
-            continue
-        if image is None:
-            continue
-        template = _template_from_image(info, image, config.template_size)
-        if template is not None:
-            templates.append(template)
-        if config.max_templates > 0 and len(templates) >= config.max_templates:
-            break
+            if image is None:
+                continue
+            templates.extend(_templates_from_image(info, image, config.template_size))
+            loaded_weapons += 1
+            if config.max_templates > 0 and loaded_weapons >= config.max_templates:
+                return tuple(templates)
     return tuple(templates)
 
 
@@ -168,22 +181,37 @@ def _load_or_fetch_manifest(
     config: WeaponConfig, cache_dir: Path
 ) -> dict[str, Any]:
     manifest_path = cache_dir / "manifest.json"
+    existing_manifest = (
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest_path.exists()
+        else None
+    )
     if (
         not config.refresh_cache
-        and manifest_path.exists()
+        and existing_manifest is not None
         and not _cache_expired(manifest_path, config.cache_ttl_hours)
     ):
-        return json.loads(manifest_path.read_text(encoding="utf-8"))
+        return existing_manifest
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    api_data = _download_json(config.api_url, config)
-    source_html = _download_text(config.source_url, config)
-    image_urls = _image_urls_from_stat_ink_page(source_html, config.source_url)
-    weapons = _manifest_weapons(api_data, image_urls)
+    fetch_config = config
+    if existing_manifest is not None:
+        fetch_config = replace(
+            config,
+            api_url=str(existing_manifest.get("api_url") or config.api_url),
+            source_url=str(existing_manifest.get("source_url") or config.source_url),
+        )
+
+    api_data = _download_json(fetch_config.api_url, fetch_config)
+    source_html = _download_text(fetch_config.source_url, fetch_config)
+    image_urls = _image_urls_from_stat_ink_page(source_html, fetch_config.source_url)
+    game = _game_key(fetch_config.api_url, fetch_config.source_url)
+    weapons = _manifest_weapons(api_data, image_urls, game)
     manifest = {
         "generated_at": time.time(),
-        "api_url": config.api_url,
-        "source_url": config.source_url,
+        "api_url": fetch_config.api_url,
+        "source_url": fetch_config.source_url,
+        "game": game,
         "weapons": weapons,
     }
     manifest_path.write_text(
@@ -193,8 +221,28 @@ def _load_or_fetch_manifest(
     return manifest
 
 
+def _weapon_manifest_dirs(cache_dir: Path) -> tuple[Path, ...]:
+    if (cache_dir / "manifest.json").exists():
+        return (cache_dir,)
+    if not cache_dir.exists():
+        return ()
+    return tuple(
+        sorted(
+            path.parent
+            for path in cache_dir.glob("*/manifest.json")
+            if path.is_file()
+        )
+    )
+
+
+def _default_fetch_dir(cache_dir: Path, config: WeaponConfig) -> Path:
+    if cache_dir.name.startswith("stat_ink_weapon"):
+        return cache_dir
+    return cache_dir / f"stat_ink_weapon{_game_key(config.api_url, config.source_url)[1:]}"
+
+
 def _manifest_weapons(
-    api_data: list[dict[str, Any]], image_urls: dict[str, str]
+    api_data: list[dict[str, Any]], image_urls: dict[str, str], game: str
 ) -> list[dict[str, Any]]:
     weapons: list[dict[str, Any]] = []
     for item in api_data:
@@ -212,6 +260,8 @@ def _manifest_weapons(
                     type_info.get("key") if isinstance(type_info, dict) else None
                 ),
                 "image_url": image_url,
+                "game": game,
+                "main_key": str(item.get("main") or item.get("main_ref") or key),
             }
         )
     return weapons
@@ -219,6 +269,7 @@ def _manifest_weapons(
 
 def _weapon_infos(manifest: dict[str, Any]) -> tuple[WeaponInfo, ...]:
     infos = []
+    game = str(manifest.get("game") or _game_key(manifest.get("api_url", ""), ""))
     for item in manifest.get("weapons", []):
         infos.append(
             WeaponInfo(
@@ -226,9 +277,18 @@ def _weapon_infos(manifest: dict[str, Any]) -> tuple[WeaponInfo, ...]:
                 name=str(item.get("name") or item["key"]),
                 type_key=item.get("type_key"),
                 image_url=str(item["image_url"]),
+                game=str(item.get("game") or game),
+                main_key=str(item.get("main_key") or item.get("key")),
             )
         )
     return tuple(infos)
+
+
+def _game_key(api_url: str, source_url: str) -> str:
+    source = f"{api_url} {source_url}"
+    if "weapon2" in source or "/v2/" in source:
+        return "s2"
+    return "s3"
 
 
 def _image_urls_from_stat_ink_page(source_html: str, source_url: str) -> dict[str, str]:
@@ -281,10 +341,26 @@ def _read_image(path: Path) -> np.ndarray | None:
     return image
 
 
-def _template_from_image(
+def _templates_from_image(
     info: WeaponInfo, image: np.ndarray, size: int
+) -> tuple[WeaponTemplate, ...]:
+    templates: list[WeaponTemplate] = []
+    for scale in (0.86, 1.0, 1.14):
+        scaled = _resize_to_square(image, max(8, int(round(size * scale))))
+        square = _center_square(scaled, size)
+        for variant in _template_orientations(square):
+            template = _template_from_square(info, variant, size)
+            if template is not None:
+                templates.append(template)
+    return tuple(templates)
+
+
+def _template_from_square(
+    info: WeaponInfo, square: np.ndarray, size: int
 ) -> WeaponTemplate | None:
-    square = _resize_to_square(image, size)
+    if square.shape[0] != size or square.shape[1] != size:
+        square = _center_square(square, size)
+
     if square.shape[2] == 4:
         bgr = square[:, :, :3]
         alpha = square[:, :, 3]
@@ -371,9 +447,38 @@ def _score_template(
     return max(0.0, 1.0 - (distance / max_distance))
 
 
-def _confidence(top_score: float, second_score: float) -> float:
-    margin = max(0.0, top_score - second_score)
-    return min(1.0, top_score * 0.78 + margin * 1.4)
+def _rank_templates(
+    slot_edges: np.ndarray,
+    slot_distance: np.ndarray,
+    templates: tuple[WeaponTemplate, ...],
+) -> list[tuple[WeaponTemplate, float]]:
+    best_by_key: dict[tuple[str, str], tuple[WeaponTemplate, float]] = {}
+    for template in templates:
+        score = _score_template(slot_edges, slot_distance, template)
+        identity = (template.info.game, template.info.key)
+        current = best_by_key.get(identity)
+        if current is None or score > current[1]:
+            best_by_key[identity] = (template, score)
+    return sorted(best_by_key.values(), key=lambda item: item[1], reverse=True)
+
+
+def _second_family_score(
+    ranked: list[tuple[WeaponTemplate, float]], top_info: WeaponInfo
+) -> float:
+    for template, score in ranked[1:]:
+        if (
+            template.info.game != top_info.game
+            or template.info.main_key != top_info.main_key
+        ):
+            return score
+    return 0.0
+
+
+def _confidence(top_score: float, second_family_score: float) -> float:
+    margin = max(0.0, top_score - second_family_score)
+    base = max(0.0, min(1.0, (top_score - 0.50) / 0.34))
+    separation = max(0.0, min(1.0, margin / 0.12))
+    return min(1.0, base * 0.45 + separation * 0.55)
 
 
 def _distance_from_edges(edges: np.ndarray) -> np.ndarray:
@@ -399,6 +504,31 @@ def _resize_to_square(image: np.ndarray, size: int) -> np.ndarray:
     y = (size - resized_height) // 2
     square[y : y + resized_height, x : x + resized_width] = resized
     return square
+
+
+def _center_square(image: np.ndarray, size: int) -> np.ndarray:
+    if image.ndim != 3:
+        raise ValueError("weapon template image must have channels")
+    height, width, channels = image.shape
+    square = np.zeros((size, size, channels), dtype=image.dtype)
+
+    source_x1 = max(0, (width - size) // 2)
+    source_y1 = max(0, (height - size) // 2)
+    source_x2 = min(width, source_x1 + size)
+    source_y2 = min(height, source_y1 + size)
+
+    dest_x1 = max(0, (size - width) // 2)
+    dest_y1 = max(0, (size - height) // 2)
+    dest_x2 = dest_x1 + (source_x2 - source_x1)
+    dest_y2 = dest_y1 + (source_y2 - source_y1)
+    square[dest_y1:dest_y2, dest_x1:dest_x2] = image[
+        source_y1:source_y2, source_x1:source_x2
+    ]
+    return square
+
+
+def _template_orientations(square: np.ndarray) -> tuple[np.ndarray, ...]:
+    return (square, cv2.flip(square, 1))
 
 
 def _center_keep_mask(shape: tuple[int, int]) -> np.ndarray:
