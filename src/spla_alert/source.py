@@ -24,8 +24,11 @@ class OpenCvFrameSource:
         width: int | None = None,
         height: int | None = None,
         fps: float | None = None,
+        buffer_size: int | None = 1,
     ):
         self.cap = cv2.VideoCapture(source)
+        if buffer_size is not None and buffer_size > 0:
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
         if width is not None:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         if height is not None:
@@ -91,10 +94,17 @@ def create_source(
     width: int | None = None,
     height: int | None = None,
     fps: float | None = None,
+    buffer_size: int | None = 1,
 ) -> FrameSource:
     if source.startswith("screen"):
         return ScreenFrameSource(_parse_screen_region(source))
-    return OpenCvFrameSource(_parse_opencv_source(source), width, height, fps)
+    return OpenCvFrameSource(
+        _parse_opencv_source(source),
+        width,
+        height,
+        fps,
+        buffer_size,
+    )
 
 
 def list_video_devices() -> list[str]:
@@ -146,4 +156,3 @@ def _v4l2_name(device: str) -> str | None:
             _, value = stripped.split(":", 1)
             return value.strip()
     return None
-

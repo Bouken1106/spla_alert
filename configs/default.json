@@ -7,11 +7,16 @@
   },
   "classifier": {
     "saturation_threshold": 60,
+    "channel_spread_threshold": 35,
+    "lab_chroma_threshold": 22.0,
     "value_min": 45,
     "colored_ratio_threshold": 0.08,
     "weak_colored_ratio_threshold": 0.045,
+    "visible_colored_ratio_threshold": 0.22,
     "p90_saturation_threshold": 100,
-    "min_colored_pixels": 40
+    "p90_channel_spread_threshold": 70,
+    "min_colored_pixels": 40,
+    "min_colored_area_ratio": 0.012,
+    "inner_ignore_ratio": 0.26
   }
 }
-

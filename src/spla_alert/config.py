@@ -24,11 +24,17 @@ class HudConfig:
 @dataclass(frozen=True)
 class ClassifierConfig:
     saturation_threshold: int = 60
+    channel_spread_threshold: int = 35
+    lab_chroma_threshold: float = 22.0
     value_min: int = 45
     colored_ratio_threshold: float = 0.08
     weak_colored_ratio_threshold: float = 0.045
+    visible_colored_ratio_threshold: float = 0.22
     p90_saturation_threshold: int = 100
+    p90_channel_spread_threshold: int = 70
     min_colored_pixels: int = 40
+    min_colored_area_ratio: float = 0.012
+    inner_ignore_ratio: float = 0.26
 
 
 @dataclass(frozen=True)
@@ -80,6 +86,12 @@ def _load_classifier(
         saturation_threshold=int(
             raw.get("saturation_threshold", default.saturation_threshold)
         ),
+        channel_spread_threshold=int(
+            raw.get("channel_spread_threshold", default.channel_spread_threshold)
+        ),
+        lab_chroma_threshold=float(
+            raw.get("lab_chroma_threshold", default.lab_chroma_threshold)
+        ),
         value_min=int(raw.get("value_min", default.value_min)),
         colored_ratio_threshold=float(
             raw.get("colored_ratio_threshold", default.colored_ratio_threshold)
@@ -87,11 +99,29 @@ def _load_classifier(
         weak_colored_ratio_threshold=float(
             raw.get("weak_colored_ratio_threshold", default.weak_colored_ratio_threshold)
         ),
+        visible_colored_ratio_threshold=float(
+            raw.get(
+                "visible_colored_ratio_threshold",
+                default.visible_colored_ratio_threshold,
+            )
+        ),
         p90_saturation_threshold=int(
             raw.get("p90_saturation_threshold", default.p90_saturation_threshold)
         ),
+        p90_channel_spread_threshold=int(
+            raw.get(
+                "p90_channel_spread_threshold",
+                default.p90_channel_spread_threshold,
+            )
+        ),
         min_colored_pixels=int(
             raw.get("min_colored_pixels", default.min_colored_pixels)
+        ),
+        min_colored_area_ratio=float(
+            raw.get("min_colored_area_ratio", default.min_colored_area_ratio)
+        ),
+        inner_ignore_ratio=float(
+            raw.get("inner_ignore_ratio", default.inner_ignore_ratio)
         ),
     )
 

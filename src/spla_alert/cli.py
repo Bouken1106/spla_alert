@@ -88,6 +88,12 @@ def _add_source_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--width", type=int, default=None)
     parser.add_argument("--height", type=int, default=None)
     parser.add_argument("--fps", type=float, default=None)
+    parser.add_argument(
+        "--buffer-size",
+        type=int,
+        default=1,
+        help="OpenCV capture buffer size for /dev/video* or stream sources",
+    )
 
 
 def _devices() -> int:
@@ -156,7 +162,13 @@ def _run(args: argparse.Namespace) -> int:
 @contextmanager
 def _detection_runtime(args: argparse.Namespace) -> Iterator[DetectionRuntime]:
     config = load_config(args.config)
-    source = create_source(args.source, args.width, args.height, args.fps)
+    source = create_source(
+        args.source,
+        args.width,
+        args.height,
+        args.fps,
+        args.buffer_size,
+    )
     try:
         yield DetectionRuntime(SplatoonHudDetector(config), source)
     finally:

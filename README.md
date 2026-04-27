@@ -7,7 +7,8 @@ Splatoon の配信画面から、画面中央上部の味方4人・敵4人のイ
 - 10フレームごとに上部 HUD を解析
 - 味方最大4人、敵最大4人をカウント
 - 生存アイコンは色付き、デス中アイコンは灰色として判定
-- アイコンサイズの多少の変化に対応するため、各枠を相対座標で切り出し
+- 中央のブキ表示やスペシャル発光の白っぽいハイライトを避けるため、アイコン外周寄りの色成分を優先して判定
+- アイコンサイズの変化に対応するため、各枠を相対座標で切り出し、見えている領域内の色比率も使って判定
 - AverMedia/ReCentral の映像を Ubuntu 側に持ってきた入力を読み取り
 - ブキ種別、スペシャル発光の識別は未実装。ただし発光していても「生存」として扱う想定
 
@@ -32,6 +33,12 @@ pip install -r requirements.txt
 
 このツールは OpenCV で読める入力を扱います。代表的には次のどれかです。
 
+おすすめの順番は次の通りです。
+
+1. AverMedia が Ubuntu で `/dev/video*` として直接見えるなら、それを読む
+2. ReCentral を別 PC で使うなら、ReCentral から Ubuntu の RTMP サーバーへ配信して、その URL を読む
+3. Ubuntu 上に ReCentral や配信プレビュー画面を表示できるなら、画面領域を直接読む
+
 ### 1. AverMedia が Ubuntu で `/dev/video*` として見える場合
 
 キャプチャデバイスを確認します。
@@ -46,9 +53,11 @@ spla-alert devices
 spla-alert run --source /dev/video0 --width 1920 --height 1080 --fps 60
 ```
 
+`/dev/video*` や RTMP/RTSP 入力では、OpenCV の入力バッファを小さくして遅延を減らすため、デフォルトで `--buffer-size 1` を指定した扱いになります。環境によって映像が不安定な場合だけ値を大きくしてください。
+
 ### 2. ReCentral から Ubuntu の RTMP サーバーへ配信する場合
 
-ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。Ubuntu 側で nginx-rtmp などを起動し、ReCentral から以下のような URL に送ります。
+ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。Ubuntu 側で nginx-rtmp や MediaMTX などの RTMP サーバーを起動し、ReCentral から以下のような URL に送ります。
 
 ```text
 rtmp://<UbuntuのIP>/live/splatoon
@@ -72,6 +81,12 @@ rtmp {
 
 ReCentral の配信先を分けて入力する画面では、URL を `rtmp://<UbuntuのIP>/live`、ストリームキーを `splatoon` にします。
 
+Ubuntu の IP は Ubuntu 側で確認します。
+
+```bash
+hostname -I
+```
+
 読み取りは次のようにします。
 
 ```bash
@@ -89,6 +104,8 @@ spla-alert run --source screen:0,0,1920,1080
 ```
 
 形式は `screen:left,top,width,height` です。配信プレビュー画面だけを指定すると、余計な UI が入りにくくなります。
+
+Ubuntu の Wayland セッションでは画面キャプチャが制限されることがあります。その場合はログイン画面で Xorg セッションを選ぶか、RTMP / `/dev/video*` 入力を使ってください。
 
 ## 実行
 
@@ -118,6 +135,18 @@ spla-alert run --source /dev/video0 --show
 
 `q` または `Esc` で終了します。
 
+10フレーム以外の間隔で処理したい場合:
+
+```bash
+spla-alert run --source /dev/video0 --every 5
+```
+
+動作確認だけしてすぐ止めたい場合:
+
+```bash
+spla-alert run --source /dev/video0 --max-frames 300
+```
+
 ## 位置合わせ
 
 画面上部 HUD の位置は解像度や配信レイアウトで少し変わります。まずスナップショットを出してください。
@@ -138,6 +167,11 @@ cp configs/default.json configs/my_capture.json
 - `slot_size`: 1アイコンを切り出す正方形サイズ。画面高さに対する割合
 - `friendly_slot_centers_x`: 左4人の中心x座標。画面幅に対する割合
 - `enemy_slot_centers_x`: 右4人の中心x座標。画面幅に対する割合
+- `saturation_threshold`: 色付き判定に使う HSV 彩度の下限
+- `channel_spread_threshold`: BGR の最大値と最小値の差。灰色誤判定を減らすための下限
+- `lab_chroma_threshold`: Lab 色空間の色度下限。彩度だけでは拾いにくい色を補助
+- `visible_colored_ratio_threshold`: 明るく見えている領域のうち、色付きとみなす割合
+- `inner_ignore_ratio`: 中央のブキ表示をどの程度無視するか。値を大きくすると外周寄りだけを見る
 
 調整した設定で実行します。
 
@@ -147,7 +181,9 @@ spla-alert run --source /dev/video0 --config configs/my_capture.json --show
 
 ## 判定ロジック
 
-各アイコン枠を HSV 色空間に変換し、楕円マスク内で彩度の高いピクセルが一定以上あれば生存と判定します。デス中の灰色アイコンは彩度が低いため、生存として数えません。
+各アイコン枠を HSV / Lab 色空間に変換し、楕円マスク内で色成分のあるピクセルが一定以上あれば生存と判定します。デス中の灰色アイコンは彩度・色度・BGR チャンネル差が低いため、生存として数えません。
+
+ブキ表示はアイコン中央に重なるため、判定では中央を少し無視して外周寄りを重視します。スペシャル発光は白っぽいハイライトとして入ることがありますが、白は色付きピクセルとして扱わず、残っているチーム色部分で生存判定します。
 
 試合ごとに味方色・敵色が変わっても、色そのものを固定していないため動きます。味方と敵の色が必ず異なることは、今後スペシャルやブキ識別を追加するときの追加情報として使えます。
 
@@ -155,6 +191,12 @@ spla-alert run --source /dev/video0 --config configs/my_capture.json --show
 
 ```bash
 python -m unittest discover
+```
+
+editable install せずに作業ツリーから直接テストする場合:
+
+```bash
+PYTHONPATH=src python -m unittest discover
 ```
 
 ## 今後追加しやすい機能

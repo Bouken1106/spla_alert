@@ -7,12 +7,24 @@ from typing import Any, Iterable, Literal
 import cv2
 import numpy as np
 
-from .config import AppConfig
+from .config import AppConfig, ClassifierConfig
 
 
 Side = Literal["friendly", "enemy"]
 BBox = tuple[int, int, int, int]
 SlotRegion = tuple[Side, int, BBox]
+
+
+@dataclass(frozen=True)
+class _SlotColorMetrics:
+    colored_ratio: float
+    visible_colored_ratio: float
+    p90_saturation: float
+    p90_channel_spread: float
+    colored_pixels: int
+    visible_pixels: int
+    score_pixels: int
+    dominant_hue: float | None
 
 
 @dataclass(frozen=True)
@@ -22,8 +34,13 @@ class SlotStatus:
     alive: bool
     bbox: BBox
     colored_ratio: float
+    visible_colored_ratio: float
     p90_saturation: float
+    p90_channel_spread: float
     colored_pixels: int
+    visible_pixels: int
+    score_pixels: int
+    dominant_hue: float | None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -32,8 +49,15 @@ class SlotStatus:
             "alive": self.alive,
             "bbox": self.bbox,
             "colored_ratio": round(self.colored_ratio, 4),
+            "visible_colored_ratio": round(self.visible_colored_ratio, 4),
             "p90_saturation": round(self.p90_saturation, 1),
+            "p90_channel_spread": round(self.p90_channel_spread, 1),
             "colored_pixels": self.colored_pixels,
+            "visible_pixels": self.visible_pixels,
+            "score_pixels": self.score_pixels,
+            "dominant_hue": (
+                None if self.dominant_hue is None else round(self.dominant_hue, 1)
+            ),
         }
 
 
@@ -109,41 +133,126 @@ class SplatoonHudDetector:
     def _classify_slot(
         self, crop: np.ndarray, side: Side, index: int, bbox: BBox
     ) -> SlotStatus:
-        cfg = self.config.classifier
         if crop.size == 0:
-            return SlotStatus(side, index, False, bbox, 0.0, 0.0, 0)
+            return _dead_slot_status(side, index, bbox)
 
-        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-        saturation = hsv[:, :, 1]
-        value = hsv[:, :, 2]
-        mask = _ellipse_mask(crop.shape[:2])
-        bright_mask = mask & (value >= cfg.value_min)
-        denominator = int(mask.sum())
-        if denominator == 0 or not np.any(bright_mask):
-            return SlotStatus(side, index, False, bbox, 0.0, 0.0, 0)
+        cfg = self.config.classifier
+        metrics = _measure_slot_color(crop, cfg)
+        return _slot_status(side, index, bbox, _is_alive(metrics, cfg), metrics)
 
-        colored_mask = bright_mask & (saturation >= cfg.saturation_threshold)
-        colored_pixels = int(colored_mask.sum())
-        colored_ratio = colored_pixels / denominator
-        p90_saturation = float(np.percentile(saturation[bright_mask], 90))
 
-        alive = colored_pixels >= cfg.min_colored_pixels and (
-            colored_ratio >= cfg.colored_ratio_threshold
-            or (
-                colored_ratio >= cfg.weak_colored_ratio_threshold
-                and p90_saturation >= cfg.p90_saturation_threshold
-            )
+def _measure_slot_color(crop: np.ndarray, cfg: ClassifierConfig) -> _SlotColorMetrics:
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
+    saturation = hsv[:, :, 1]
+    value = hsv[:, :, 2]
+    channel_spread = (
+        crop.max(axis=2).astype(np.int16) - crop.min(axis=2).astype(np.int16)
+    )
+    lab_a = lab[:, :, 1].astype(np.float32) - 128.0
+    lab_b = lab[:, :, 2].astype(np.float32) - 128.0
+    lab_chroma = np.sqrt(lab_a * lab_a + lab_b * lab_b)
+
+    score_mask = _ellipse_mask(crop.shape[:2], cfg.inner_ignore_ratio)
+    visible_mask = score_mask & (value >= cfg.value_min)
+    score_pixels = int(score_mask.sum())
+    visible_pixels = int(visible_mask.sum())
+    if score_pixels == 0 or visible_pixels == 0:
+        return _empty_color_metrics(visible_pixels, score_pixels)
+
+    colored_mask = visible_mask & _colored_pixel_mask(
+        saturation,
+        channel_spread,
+        lab_chroma,
+        cfg,
+    )
+    colored_pixels = int(colored_mask.sum())
+
+    return _SlotColorMetrics(
+        colored_ratio=colored_pixels / score_pixels,
+        visible_colored_ratio=colored_pixels / visible_pixels,
+        p90_saturation=float(np.percentile(saturation[visible_mask], 90)),
+        p90_channel_spread=float(np.percentile(channel_spread[visible_mask], 90)),
+        colored_pixels=colored_pixels,
+        visible_pixels=visible_pixels,
+        score_pixels=score_pixels,
+        dominant_hue=_dominant_hue(hsv[:, :, 0][colored_mask]),
+    )
+
+
+def _colored_pixel_mask(
+    saturation: np.ndarray,
+    channel_spread: np.ndarray,
+    lab_chroma: np.ndarray,
+    cfg: ClassifierConfig,
+) -> np.ndarray:
+    saturated = saturation >= cfg.saturation_threshold
+    color_separated = channel_spread >= cfg.channel_spread_threshold
+    chromatic = lab_chroma >= cfg.lab_chroma_threshold
+    return (saturated & color_separated) | chromatic
+
+
+def _is_alive(metrics: _SlotColorMetrics, cfg: ClassifierConfig) -> bool:
+    if metrics.score_pixels == 0 or metrics.visible_pixels == 0:
+        return False
+
+    min_colored_pixels = max(
+        cfg.min_colored_pixels,
+        int(round(metrics.score_pixels * cfg.min_colored_area_ratio)),
+    )
+    if metrics.colored_pixels < min_colored_pixels:
+        return False
+
+    strong_area_match = metrics.colored_ratio >= cfg.colored_ratio_threshold
+    strong_visible_match = (
+        metrics.visible_colored_ratio >= cfg.visible_colored_ratio_threshold
+    )
+    weak_but_saturated = (
+        metrics.colored_ratio >= cfg.weak_colored_ratio_threshold
+        and (
+            metrics.p90_saturation >= cfg.p90_saturation_threshold
+            or metrics.p90_channel_spread >= cfg.p90_channel_spread_threshold
         )
+    )
+    return strong_area_match or strong_visible_match or weak_but_saturated
 
-        return SlotStatus(
-            side=side,
-            index=index,
-            alive=alive,
-            bbox=bbox,
-            colored_ratio=colored_ratio,
-            p90_saturation=p90_saturation,
-            colored_pixels=colored_pixels,
-        )
+
+def _slot_status(
+    side: Side,
+    index: int,
+    bbox: BBox,
+    alive: bool,
+    metrics: _SlotColorMetrics,
+) -> SlotStatus:
+    return SlotStatus(
+        side=side,
+        index=index,
+        alive=alive,
+        bbox=bbox,
+        colored_ratio=metrics.colored_ratio,
+        visible_colored_ratio=metrics.visible_colored_ratio,
+        p90_saturation=metrics.p90_saturation,
+        p90_channel_spread=metrics.p90_channel_spread,
+        colored_pixels=metrics.colored_pixels,
+        visible_pixels=metrics.visible_pixels,
+        score_pixels=metrics.score_pixels,
+        dominant_hue=metrics.dominant_hue,
+    )
+
+
+def _empty_color_metrics(
+    visible_pixels: int = 0, score_pixels: int = 0
+) -> _SlotColorMetrics:
+    return _SlotColorMetrics(
+        colored_ratio=0.0,
+        visible_colored_ratio=0.0,
+        p90_saturation=0.0,
+        p90_channel_spread=0.0,
+        colored_pixels=0,
+        visible_pixels=visible_pixels,
+        score_pixels=score_pixels,
+        dominant_hue=None,
+    )
 
 
 def draw_overlay(frame: np.ndarray, result: CountResult) -> np.ndarray:
@@ -204,12 +313,47 @@ def _crop(frame: np.ndarray, bbox: BBox) -> np.ndarray:
     return frame[y1:y2, x1:x2]
 
 
-def _ellipse_mask(shape: tuple[int, int]) -> np.ndarray:
+def _dead_slot_status(
+    side: Side,
+    index: int,
+    bbox: BBox,
+    visible_pixels: int = 0,
+    score_pixels: int = 0,
+) -> SlotStatus:
+    metrics = _empty_color_metrics(visible_pixels, score_pixels)
+    return _slot_status(side, index, bbox, False, metrics)
+
+
+def _ellipse_mask(
+    shape: tuple[int, int], inner_ignore_ratio: float = 0.0
+) -> np.ndarray:
     height, width = shape
     yy, xx = np.ogrid[:height, :width]
     center_y = (height - 1) / 2.0
     center_x = (width - 1) / 2.0
     radius_y = max(height * 0.48, 1.0)
     radius_x = max(width * 0.48, 1.0)
-    normalized = ((yy - center_y) / radius_y) ** 2 + ((xx - center_x) / radius_x) ** 2
-    return normalized <= 1.0
+    normalized = ((yy - center_y) / radius_y) ** 2 + (
+        (xx - center_x) / radius_x
+    ) ** 2
+    outer = normalized <= 1.0
+    if inner_ignore_ratio <= 0.0:
+        return outer
+    inner = normalized <= inner_ignore_ratio * inner_ignore_ratio
+    return outer & ~inner
+
+
+def _dominant_hue(hue: np.ndarray) -> float | None:
+    if hue.size == 0:
+        return None
+
+    # OpenCV hue is 0..179. Doubling maps it onto a full 0..360 degree circle.
+    radians = hue.astype(np.float32) * (2.0 * np.pi / 180.0)
+    mean_sin = float(np.sin(radians).mean())
+    mean_cos = float(np.cos(radians).mean())
+    if mean_sin == 0.0 and mean_cos == 0.0:
+        return None
+    angle = np.arctan2(mean_sin, mean_cos)
+    if angle < 0:
+        angle += 2.0 * np.pi
+    return float(angle * 90.0 / np.pi)
