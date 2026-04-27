@@ -9,13 +9,14 @@ from typing import Any
 
 SLOT_COUNT = 4
 SlotCenters = tuple[float, float, float, float]
-DEFAULT_FRIENDLY_X = (0.374, 0.409, 0.444, 0.479)
-DEFAULT_ENEMY_X = (0.521, 0.556, 0.591, 0.626)
+DEFAULT_FRIENDLY_X = (0.328, 0.366, 0.404, 0.442)
+DEFAULT_ENEMY_X = (0.556, 0.604, 0.648, 0.703)
 _CLASSIFIER_INT_FIELDS = (
     "saturation_threshold",
     "channel_spread_threshold",
     "value_min",
     "x_mark_value_min",
+    "x_mark_dark_value_max",
     "x_mark_saturation_max",
     "p90_saturation_threshold",
     "p90_channel_spread_threshold",
@@ -98,10 +99,11 @@ class ClassifierConfig:
     min_colored_area_ratio: float = 0.012
     x_mark_value_min: int = 80
     x_mark_saturation_max: int = 70
-    x_mark_line_ratio_threshold: float = 0.24
-    x_mark_contrast_threshold: float = 0.11
+    x_mark_line_ratio_threshold: float = 0.20
+    x_mark_contrast_threshold: float = 0.09
     x_mark_band_width: float = 0.12
     x_mark_max_colored_ratio: float = 0.62
+    x_mark_dark_value_max: int = 70
     probe_radius_ratio: float = 0.035
     hud_timer_width_ratio: float = 0.09
     hud_timer_height_ratio: float = 0.06

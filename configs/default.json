@@ -2,8 +2,8 @@
   "hud": {
     "slot_center_y": 0.058,
     "slot_size": 0.074,
-    "friendly_slot_centers_x": [0.374, 0.409, 0.444, 0.479],
-    "enemy_slot_centers_x": [0.521, 0.556, 0.591, 0.626]
+    "friendly_slot_centers_x": [0.328, 0.366, 0.404, 0.442],
+    "enemy_slot_centers_x": [0.556, 0.604, 0.648, 0.703]
   },
   "classifier": {
     "require_hud_presence": true,
@@ -19,9 +19,10 @@
     "min_colored_pixels": 12,
     "min_colored_area_ratio": 0.012,
     "x_mark_value_min": 80,
+    "x_mark_dark_value_max": 70,
     "x_mark_saturation_max": 70,
-    "x_mark_line_ratio_threshold": 0.24,
-    "x_mark_contrast_threshold": 0.11,
+    "x_mark_line_ratio_threshold": 0.20,
+    "x_mark_contrast_threshold": 0.09,
     "x_mark_band_width": 0.12,
     "x_mark_max_colored_ratio": 0.62,
     "probe_radius_ratio": 0.035,

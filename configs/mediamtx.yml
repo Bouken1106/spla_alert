@@ -1,0 +1,9 @@
+# MediaMTX config for this project.
+#
+# ReCentral is currently publishing to /rtmp/poke, while spla-alert and
+# existing local tools can read from the shorter /rtmp URL.
+paths:
+  rtmp:
+    source: rtmp://127.0.0.1:1935/rtmp/poke
+
+  all_others:

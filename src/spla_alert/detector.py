@@ -451,11 +451,25 @@ def _x_mark_score(crop: np.ndarray, cfg: ClassifierConfig) -> tuple[float, float
     pale_mask = (value >= cfg.x_mark_value_min) & (
         saturation <= cfg.x_mark_saturation_max
     )
+    dark_mask = value <= cfg.x_mark_dark_value_max
 
     main, anti, outside = _x_mark_masks(crop.shape[:2], cfg.x_mark_band_width)
-    main_ratio = _mask_ratio(pale_mask, main)
-    anti_ratio = _mask_ratio(pale_mask, anti)
-    outside_ratio = _mask_ratio(pale_mask, outside)
+    pale_score, pale_min_line_ratio = _x_line_score(pale_mask, main, anti, outside)
+    dark_score, dark_min_line_ratio = _x_line_score(dark_mask, main, anti, outside)
+    if dark_score > pale_score:
+        return dark_score, dark_min_line_ratio
+    return pale_score, pale_min_line_ratio
+
+
+def _x_line_score(
+    source_mask: np.ndarray,
+    main: np.ndarray,
+    anti: np.ndarray,
+    outside: np.ndarray,
+) -> tuple[float, float]:
+    main_ratio = _mask_ratio(source_mask, main)
+    anti_ratio = _mask_ratio(source_mask, anti)
+    outside_ratio = _mask_ratio(source_mask, outside)
     min_line_ratio = min(main_ratio, anti_ratio)
     return max(0.0, min_line_ratio - outside_ratio), min_line_ratio
 

@@ -66,16 +66,16 @@ spla-alert run --source /dev/video0 --width 1920 --height 1080 --fps 60 --fourcc
 
 ### 2. ReCentral から Ubuntu の RTMP サーバーへ配信する場合
 
-ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。この例では MediaMTX を RTMP サーバーとして使い、`rtmp/poke` というパスに配信します。
+ReCentral 側の配信先を Ubuntu 上の RTMP URL にします。この例では MediaMTX を RTMP サーバーとして使います。ReCentral からは `rtmp/poke` に配信し、`spla-alert` からは従来どおり `rtmp://127.0.0.1:1935/rtmp` で読みます。
 
 #### MediaMTX を Docker で起動する
 
-Ubuntu 側で Docker が使える場合は、設定ファイルなしで起動できます。この用途では RTMP だけを使うため、`1935` 番ポートだけを公開します。
+Ubuntu 側で Docker が使える場合は、`configs/mediamtx.yml` を読み込んで起動します。この設定では `rtmp://127.0.0.1:1935/rtmp` を読むと、MediaMTX が内部的に `rtmp://127.0.0.1:1935/rtmp/poke` を取りに行きます。
 
 手元で動作確認しながら起動する場合:
 
 ```bash
-docker run --rm -it --name mediamtx -p 1935:1935 bluenviron/mediamtx:1
+docker run --rm -it --name mediamtx -p 1935:1935 -v "$PWD/configs/mediamtx.yml:/mediamtx.yml:ro" bluenviron/mediamtx:1
 ```
 
 ログに `[RTMP] listener opened on :1935` のような行が出れば待ち受け中です。停止するときは `Ctrl+C` を押します。
@@ -83,7 +83,7 @@ docker run --rm -it --name mediamtx -p 1935:1935 bluenviron/mediamtx:1
 常駐させる場合:
 
 ```bash
-docker run -d --name mediamtx -p 1935:1935 --restart unless-stopped bluenviron/mediamtx:1
+docker run -d --name mediamtx -p 1935:1935 --restart unless-stopped -v "$PWD/configs/mediamtx.yml:/mediamtx.yml:ro" bluenviron/mediamtx:1
 docker logs -f mediamtx
 ```
 
@@ -118,7 +118,7 @@ ReCentral から以下の RTMP URL に送ります。
 rtmp://<UbuntuのIP>:1935/rtmp/poke
 ```
 
-ReCentral の配信先を URL とストリームキーに分けて入力する画面では、URL を `rtmp://<UbuntuのIP>:1935/rtmp`、ストリームキーを `poke` にします。
+ReCentral の配信先を URL とストリームキーに分けて入力する画面では、URL を `rtmp://<UbuntuのIP>:1935/rtmp`、ストリームキーを `poke` にします。ストリームキーを分けずに1つのURLとして入力できる画面なら、`rtmp://<UbuntuのIP>:1935/rtmp/poke` を入力します。
 
 Ubuntu の IP は Ubuntu 側で確認します。
 
@@ -126,16 +126,24 @@ Ubuntu の IP は Ubuntu 側で確認します。
 hostname -I
 ```
 
+ReCentral の配信を開始したら、MediaMTX のログを確認します。
+
+```bash
+docker logs -f mediamtx
+```
+
+`is publishing to path 'rtmp/poke'` のようなログが出れば、ReCentral から MediaMTX に映像が届いています。さらに `stream is available and online` が `path rtmp` にも出れば、`rtmp://127.0.0.1:1935/rtmp` で読める状態です。`no stream is available on path 'rtmp/poke'` が出る場合は、MediaMTX は起動していますが、まだ ReCentral 側の配信が届いていません。ReCentral の配信開始、配信先 URL、ストリームキーを確認してください。
+
 この PC から同じ Ubuntu 上の MediaMTX を読む場合は、`127.0.0.1` を使います。
 
 ```bash
-spla-alert run --source rtmp://127.0.0.1:1935/rtmp/poke
+spla-alert run --source rtmp://127.0.0.1:1935/rtmp
 ```
 
 1 フレームだけ確認画像を保存する場合:
 
 ```bash
-spla-alert snapshot --source rtmp://127.0.0.1:1935/rtmp/poke --output snapshot_overlay.jpg
+spla-alert snapshot --source rtmp://127.0.0.1:1935/rtmp --output snapshot_overlay.jpg
 ```
 
 別 PC の ReCentral から送る場合は `127.0.0.1` ではなく Ubuntu マシンの LAN IP を指定してください。
@@ -243,7 +251,7 @@ spla-alert snapshot \
 ```
 
 `snapshot_result.json` には各スロットの色付きピクセル比率、見えている領域、支配的な色相などが入ります。`snapshot_slots/` には `friendly_1_alive.jpg` のような名前で8個の切り出し画像が保存されます。枠位置やしきい値の調整時は、この2つを見ながら変更してください。
-`x_mark_score` と `x_mark_min_line_ratio` は、灰色/白のXマークらしさを示すデバッグ値です。
+`x_mark_score` と `x_mark_min_line_ratio` は、暗色または灰色/白のXマークらしさを示すデバッグ値です。
 `--weapons` を付けると、各スロットの `weapon` に推定ブキ、信頼度、上位候補、参照した画像URLが入ります。
 
 ```bash

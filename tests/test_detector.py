@@ -235,6 +235,33 @@ class DetectorTest(unittest.TestCase):
             config.classifier.x_mark_contrast_threshold,
         )
 
+    def test_x_marked_hud_slots_over_colored_stage_are_dead(self):
+        config = self._config_without_hud_gate()
+        frame = np.full((720, 1280, 3), (25, 150, 35), dtype=np.uint8)
+
+        self._draw_actual_hud_slots(
+            frame,
+            config,
+            "friendly",
+            alive_indexes={2, 3},
+            alive_color=(190, 35, 165),
+        )
+        self._draw_actual_hud_slots(
+            frame,
+            config,
+            "enemy",
+            alive_indexes={0, 1, 2},
+            alive_color=(35, 210, 60),
+        )
+
+        result = SplatoonHudDetector(config).count(frame)
+
+        self.assertEqual(result.friendly_alive, 2)
+        self.assertEqual(result.enemy_alive, 3)
+        self.assertFalse(result.slots[0].alive)
+        self.assertFalse(result.slots[1].alive)
+        self.assertFalse(result.slots[7].alive)
+
     def test_smaller_advantage_icons_are_still_counted(self):
         config = self._config_without_hud_gate()
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
@@ -381,6 +408,72 @@ class DetectorTest(unittest.TestCase):
             (165, 165, 165),
             thickness,
         )
+
+    def _draw_actual_hud_slots(
+        self,
+        frame,
+        config,
+        side,
+        alive_indexes,
+        alive_color,
+    ):
+        h, w = frame.shape[:2]
+        xs = (
+            config.hud.friendly_slot_centers_x
+            if side == "friendly"
+            else config.hud.enemy_slot_centers_x
+        )
+        slot_size = int(config.hud.slot_size * h)
+        radius = max(10, int(slot_size * 0.36))
+        for idx, x_ratio in enumerate(xs):
+            center = (int(x_ratio * w), int(config.hud.slot_center_y * h))
+            if idx in alive_indexes:
+                points = np.array(
+                    [
+                        (center[0], center[1] - radius),
+                        (center[0] - radius, center[1] + radius),
+                        (center[0] + radius, center[1] + radius),
+                    ],
+                    dtype=np.int32,
+                )
+                cv2.fillConvexPoly(frame, points, alive_color)
+                cv2.rectangle(
+                    frame,
+                    (center[0] - radius // 2, center[1] - radius // 6),
+                    (center[0] + radius // 2, center[1] + radius // 5),
+                    (25, 25, 25),
+                    thickness=-1,
+                )
+            else:
+                cv2.circle(frame, center, radius, (95, 95, 95), thickness=-1)
+                cv2.line(
+                    frame,
+                    (center[0] - radius, center[1] - radius),
+                    (center[0] + radius, center[1] + radius),
+                    (12, 12, 12),
+                    max(8, radius // 2),
+                )
+                cv2.line(
+                    frame,
+                    (center[0] + radius, center[1] - radius),
+                    (center[0] - radius, center[1] + radius),
+                    (12, 12, 12),
+                    max(8, radius // 2),
+                )
+                cv2.line(
+                    frame,
+                    (center[0] - radius, center[1] - radius),
+                    (center[0] + radius, center[1] + radius),
+                    (165, 165, 165),
+                    max(4, radius // 4),
+                )
+                cv2.line(
+                    frame,
+                    (center[0] + radius, center[1] - radius),
+                    (center[0] - radius, center[1] + radius),
+                    (165, 165, 165),
+                    max(4, radius // 4),
+                )
 
 
 if __name__ == "__main__":

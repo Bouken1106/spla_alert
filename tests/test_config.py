@@ -42,6 +42,7 @@ class ConfigTest(unittest.TestCase):
                     "require_hud_presence": "false",
                     "channel_spread_threshold": "45",
                     "visible_colored_ratio_threshold": "0.3",
+                    "x_mark_dark_value_max": "75",
                     "x_mark_saturation_max": "65",
                     "x_mark_contrast_threshold": "0.12",
                     "x_mark_max_colored_ratio": "0.58",
@@ -65,6 +66,7 @@ class ConfigTest(unittest.TestCase):
         self.assertFalse(config.classifier.require_hud_presence)
         self.assertEqual(config.classifier.channel_spread_threshold, 45)
         self.assertEqual(config.classifier.visible_colored_ratio_threshold, 0.3)
+        self.assertEqual(config.classifier.x_mark_dark_value_max, 75)
         self.assertEqual(config.classifier.x_mark_saturation_max, 65)
         self.assertEqual(config.classifier.x_mark_contrast_threshold, 0.12)
         self.assertEqual(config.classifier.x_mark_max_colored_ratio, 0.58)
