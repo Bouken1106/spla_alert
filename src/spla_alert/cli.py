@@ -3,11 +3,12 @@ from __future__ import annotations
 import argparse
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 import sys
 import time
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -206,24 +207,50 @@ def _run(args: argparse.Namespace) -> int:
 
 def _webtest(args: argparse.Namespace) -> int:
     output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    source_dir = output_dir / "source_images"
+    overlay_dir = output_dir / "overlays"
+    result_dir = output_dir / "results"
+    for directory in (source_dir, overlay_dir, result_dir):
+        directory.mkdir(parents=True, exist_ok=True)
+
     failures = 0
+    entries: list[dict[str, Any]] = []
 
     for fixture in _web_fixtures():
-        image_path = output_dir / f"{fixture.name}{_url_suffix(fixture.url)}"
-        overlay_path = output_dir / f"{fixture.name}_overlay.jpg"
-        json_path = output_dir / f"{fixture.name}.json"
+        image_path = source_dir / f"{fixture.name}{_url_suffix(fixture.url)}"
+        overlay_path = overlay_dir / f"{fixture.name}_overlay.jpg"
+        json_path = result_dir / f"{fixture.name}.json"
 
         try:
             _download_file(fixture.url, image_path)
         except OSError as exc:
             print(f"FAIL {fixture.name}: download failed: {exc}", file=sys.stderr)
+            entries.append(
+                _webtest_entry(
+                    fixture,
+                    image_path,
+                    overlay_path,
+                    json_path,
+                    status="FAIL",
+                    error=f"download failed: {exc}",
+                )
+            )
             failures += 1
             continue
 
         frame = cv2.imread(str(image_path))
         if frame is None:
             print(f"FAIL {fixture.name}: OpenCV could not read {image_path}")
+            entries.append(
+                _webtest_entry(
+                    fixture,
+                    image_path,
+                    overlay_path,
+                    json_path,
+                    status="FAIL",
+                    error=f"OpenCV could not read {image_path}",
+                )
+            )
             failures += 1
             continue
 
@@ -231,6 +258,17 @@ def _webtest(args: argparse.Namespace) -> int:
         overlay = draw_overlay(frame, result)
         if not cv2.imwrite(str(overlay_path), overlay):
             print(f"FAIL {fixture.name}: failed to write {overlay_path}")
+            entries.append(
+                _webtest_entry(
+                    fixture,
+                    image_path,
+                    overlay_path,
+                    json_path,
+                    status="FAIL",
+                    result=result,
+                    error=f"failed to write {overlay_path}",
+                )
+            )
             failures += 1
             continue
         _save_json_result(result, json_path)
@@ -240,6 +278,16 @@ def _webtest(args: argparse.Namespace) -> int:
             and result.enemy_alive == fixture.expected_enemy
         )
         status = "PASS" if ok else "FAIL"
+        entries.append(
+            _webtest_entry(
+                fixture,
+                image_path,
+                overlay_path,
+                json_path,
+                status=status,
+                result=result,
+            )
+        )
         print(
             f"{status} {fixture.name}: "
             f"friendly={result.friendly_alive}/4 "
@@ -251,6 +299,8 @@ def _webtest(args: argparse.Namespace) -> int:
         if not ok:
             failures += 1
 
+    _write_webtest_manifest(output_dir, entries)
+    _write_webtest_readme(output_dir, entries)
     return 1 if failures else 0
 
 
@@ -316,6 +366,7 @@ def _save_slot_crops(frame, result: CountResult, crops_dir: Path) -> bool:
 
 
 def _download_file(url: str, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     request = Request(url, headers={"User-Agent": "spla-alert/0.1"})
     with urlopen(request, timeout=30) as response:
         path.write_bytes(response.read())
@@ -324,6 +375,86 @@ def _download_file(url: str, path: Path) -> None:
 def _url_suffix(url: str) -> str:
     suffix = Path(urlparse(url).path).suffix
     return suffix if suffix else ".jpg"
+
+
+def _webtest_entry(
+    fixture: WebFixture,
+    image_path: Path,
+    overlay_path: Path,
+    json_path: Path,
+    status: str,
+    result: CountResult | None = None,
+    error: str | None = None,
+) -> dict[str, Any]:
+    entry: dict[str, Any] = {
+        "name": fixture.name,
+        "status": status,
+        "source_page": fixture.source_page,
+        "image_url": fixture.url,
+        "source_image": str(image_path),
+        "overlay": str(overlay_path),
+        "result_json": str(json_path),
+        "expected": {
+            "friendly_alive": fixture.expected_friendly,
+            "enemy_alive": fixture.expected_enemy,
+        },
+        "config": asdict(fixture.config),
+    }
+    if result is not None:
+        entry["actual"] = {
+            "friendly_alive": result.friendly_alive,
+            "enemy_alive": result.enemy_alive,
+        }
+    if error is not None:
+        entry["error"] = error
+    return entry
+
+
+def _write_webtest_manifest(output_dir: Path, entries: list[dict[str, Any]]) -> None:
+    manifest = {
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
+        "fixtures": entries,
+    }
+    (output_dir / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_webtest_readme(output_dir: Path, entries: list[dict[str, Any]]) -> None:
+    lines = [
+        "# spla-alert webtest outputs",
+        "",
+        "Downloaded Splatoon gameplay/HUD images used to validate the detector.",
+        "",
+        "- `source_images/`: original images downloaded from the listed URLs",
+        "- `overlays/`: detector bounding boxes and alive/dead labels",
+        "- `results/`: detailed per-slot JSON metrics",
+        "- `manifest.json`: machine-readable source, expected, and actual counts",
+        "",
+        "| status | fixture | expected | actual | source |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for entry in entries:
+        expected = entry["expected"]
+        actual = entry.get("actual", {})
+        actual_text = (
+            f"{actual.get('friendly_alive', '?')}/4,"
+            f"{actual.get('enemy_alive', '?')}/4"
+        )
+        expected_text = (
+            f"{expected['friendly_alive']}/4,{expected['enemy_alive']}/4"
+        )
+        lines.append(
+            "| "
+            f"{entry['status']} | "
+            f"{entry['name']} | "
+            f"{expected_text} | "
+            f"{actual_text} | "
+            f"{entry['source_page']} |"
+        )
+    lines.append("")
+    (output_dir / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _web_fixtures() -> tuple[WebFixture, ...]:

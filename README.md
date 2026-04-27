@@ -212,32 +212,38 @@ spla-alert run --source /dev/video0 --config configs/my_capture.json --show
 
 ## ネット上の実画像で検証
 
-公開されている Splatoon のスクリーンショットをダウンロードして、期待値と照合できます。ネット接続が必要です。画像そのものは著作権付きのため、リポジトリには含めず、指定した出力先にだけ保存します。
+公開されている Splatoon のスクリーンショットをダウンロードして、期待値と照合できます。ネット接続が必要です。画像そのものは著作権付きのため、リポジトリに固定のテストデータとして同梱せず、指定した出力先に整理して保存します。
 
 ```bash
-PYTHONPATH=src python -m spla_alert.cli webtest --output-dir /tmp/spla_alert_webtest
+spla-alert webtest --output-dir webtest_outputs
 ```
 
-editable install 済みなら次でも動きます。
+editable install せずに作業ツリーから直接実行する場合:
 
 ```bash
-spla-alert webtest --output-dir /tmp/spla_alert_webtest
+PYTHONPATH=src python -m spla_alert.cli webtest --output-dir webtest_outputs
 ```
 
 現在の検証セット:
 
 - Inkipedia の Splatoon 3 リプレイスクリーンショット: `friendly=4/4 enemy=4/4`
-- Reddit の上部HUDクロップ: Xマーク付きの左1人をデス扱いし、`friendly=3/4 enemy=4/4`
+- Reddit の上部 HUD クロップ: Xマーク付きの左1人をデス扱いし、`friendly=3/4 enemy=4/4`
 
-実行後、`*_overlay.jpg` で枠位置と判定、`*.json` で各スロットの指標を確認できます。
+実行後、出力先は次の構成になります。
+
+- `source_images/`: 今後の改良で見返すための元画像
+- `overlays/`: 検出枠と生存/デス判定を重ねた画像
+- `results/`: 各スロットの色比率や X マークスコアなどの JSON
+- `manifest.json`: 画像 URL、参照元ページ、期待値、実測値、使用 config
+- `README.md`: 人間が見やすい検証結果サマリ
 
 ## テスト
 
 ```bash
-python -m unittest discover
+python -m pytest
 ```
 
-editable install せずに作業ツリーから直接テストする場合:
+`unittest` だけで実行する場合:
 
 ```bash
 PYTHONPATH=src python -m unittest discover
