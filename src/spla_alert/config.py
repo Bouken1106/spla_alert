@@ -47,6 +47,31 @@ _CLASSIFIER_FLOAT_FIELDS = (
 _CLASSIFIER_BOOL_FIELDS = (
     "require_hud_presence",
 )
+_WEAPON_INT_FIELDS = (
+    "template_size",
+    "max_templates",
+    "candidate_count",
+    "cache_ttl_hours",
+    "download_timeout_seconds",
+)
+_WEAPON_FLOAT_FIELDS = (
+    "confidence_threshold",
+    "min_edge_ratio",
+    "crop_left_ratio",
+    "crop_top_ratio",
+    "crop_right_ratio",
+    "crop_bottom_ratio",
+)
+_WEAPON_BOOL_FIELDS = (
+    "enabled",
+    "refresh_cache",
+)
+_WEAPON_STR_FIELDS = (
+    "api_url",
+    "source_url",
+    "cache_dir",
+    "user_agent",
+)
 
 
 @dataclass(frozen=True)
@@ -92,9 +117,31 @@ class ClassifierConfig:
 
 
 @dataclass(frozen=True)
+class WeaponConfig:
+    enabled: bool = False
+    api_url: str = "https://stat.ink/api/v3/weapon"
+    source_url: str = "https://stat.ink/api-info/weapon3"
+    cache_dir: str = "local_assets/weapons/stat_ink_weapon3"
+    user_agent: str = "spla-alert/0.1"
+    template_size: int = 64
+    max_templates: int = 0
+    candidate_count: int = 3
+    cache_ttl_hours: int = 24 * 7
+    download_timeout_seconds: int = 30
+    refresh_cache: bool = False
+    confidence_threshold: float = 0.32
+    min_edge_ratio: float = 0.01
+    crop_left_ratio: float = 0.08
+    crop_top_ratio: float = 0.10
+    crop_right_ratio: float = 0.92
+    crop_bottom_ratio: float = 0.88
+
+
+@dataclass(frozen=True)
 class AppConfig:
     hud: HudConfig = field(default_factory=HudConfig)
     classifier: ClassifierConfig = field(default_factory=ClassifierConfig)
+    weapons: WeaponConfig = field(default_factory=WeaponConfig)
 
 
 def load_config(path: str | Path | None) -> AppConfig:
@@ -108,6 +155,7 @@ def load_config(path: str | Path | None) -> AppConfig:
     config = AppConfig()
     hud_raw = raw.get("hud", {})
     classifier_raw = raw.get("classifier", {})
+    weapons_raw = raw.get("weapons", {})
 
     if hud_raw:
         config = replace(config, hud=_load_hud(config.hud, hud_raw))
@@ -115,6 +163,8 @@ def load_config(path: str | Path | None) -> AppConfig:
         config = replace(
             config, classifier=_load_classifier(config.classifier, classifier_raw)
         )
+    if weapons_raw:
+        config = replace(config, weapons=_load_weapons(config.weapons, weapons_raw))
     return config
 
 
@@ -140,6 +190,15 @@ def _load_classifier(
     overrides.update(_coerced_overrides(raw, _CLASSIFIER_INT_FIELDS, int))
     overrides.update(_coerced_overrides(raw, _CLASSIFIER_FLOAT_FIELDS, float))
     overrides.update(_coerced_overrides(raw, _CLASSIFIER_BOOL_FIELDS, _coerce_bool))
+    return replace(default, **overrides)
+
+
+def _load_weapons(default: WeaponConfig, raw: dict[str, Any]) -> WeaponConfig:
+    overrides: dict[str, Any] = {}
+    overrides.update(_coerced_overrides(raw, _WEAPON_INT_FIELDS, int))
+    overrides.update(_coerced_overrides(raw, _WEAPON_FLOAT_FIELDS, float))
+    overrides.update(_coerced_overrides(raw, _WEAPON_BOOL_FIELDS, _coerce_bool))
+    overrides.update(_coerced_overrides(raw, _WEAPON_STR_FIELDS, str))
     return replace(default, **overrides)
 
 

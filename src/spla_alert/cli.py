@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import json
 import sys
 import time
@@ -134,6 +134,16 @@ def _add_source_args(parser: argparse.ArgumentParser) -> None:
         "--fourcc",
         default=None,
         help="optional 4-character capture format for /dev/video*, for example MJPG",
+    )
+    parser.add_argument(
+        "--weapons",
+        action="store_true",
+        help="estimate each player's weapon from the top HUD icons",
+    )
+    parser.add_argument(
+        "--refresh-weapons",
+        action="store_true",
+        help="refresh cached external weapon icon templates before recognition",
     )
 
 
@@ -307,6 +317,15 @@ def _webtest(args: argparse.Namespace) -> int:
 @contextmanager
 def _detection_runtime(args: argparse.Namespace) -> Iterator[DetectionRuntime]:
     config = load_config(args.config)
+    if args.weapons or args.refresh_weapons:
+        config = replace(
+            config,
+            weapons=replace(
+                config.weapons,
+                enabled=True,
+                refresh_cache=args.refresh_weapons or config.weapons.refresh_cache,
+            ),
+        )
     source = create_source(
         args.source,
         args.width,
@@ -337,10 +356,31 @@ def _preview_requested(frame, result: CountResult | None) -> bool:
 
 def _format_result(result: CountResult) -> str:
     timestamp = time.strftime("%H:%M:%S", time.localtime(result.processed_at))
-    return (
+    text = (
         f"{timestamp} frame={result.frame_index} "
         f"friendly={result.friendly_alive}/4 enemy={result.enemy_alive}/4"
     )
+    weapons = _format_weapons(result)
+    return f"{text} {weapons}" if weapons else text
+
+
+def _format_weapons(result: CountResult) -> str:
+    if not any(slot.weapon is not None for slot in result.slots):
+        return ""
+
+    friendly = _side_weapon_keys(result, "friendly")
+    enemy = _side_weapon_keys(result, "enemy")
+    friendly_text = ",".join(friendly)
+    enemy_text = ",".join(enemy)
+    return f"friendly_weapons=[{friendly_text}] enemy_weapons=[{enemy_text}]"
+
+
+def _side_weapon_keys(result: CountResult, side: str) -> list[str]:
+    return [
+        slot.weapon.key if slot.weapon is not None else "?"
+        for slot in result.slots
+        if slot.side == side
+    ]
 
 
 def _save_json_result(result: CountResult, path: Path) -> None:

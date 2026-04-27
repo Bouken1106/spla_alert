@@ -50,6 +50,12 @@ class ConfigTest(unittest.TestCase):
                     "hud_timer_edge_ratio_threshold": "0.08",
                     "hud_team_hue_slots_min": "3",
                     "hud_min_alive_slots": "2",
+                },
+                "weapons": {
+                    "enabled": "true",
+                    "confidence_threshold": "0.41",
+                    "template_size": "48",
+                    "cache_dir": "/tmp/spla-alert-weapons",
                 }
             }
         )
@@ -71,6 +77,10 @@ class ConfigTest(unittest.TestCase):
             config.classifier.saturation_threshold,
             AppConfig().classifier.saturation_threshold,
         )
+        self.assertTrue(config.weapons.enabled)
+        self.assertEqual(config.weapons.confidence_threshold, 0.41)
+        self.assertEqual(config.weapons.template_size, 48)
+        self.assertEqual(config.weapons.cache_dir, "/tmp/spla-alert-weapons")
 
     def _write_config(self, value):
         temp_dir = tempfile.TemporaryDirectory()

@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 
 from .config import AppConfig, ClassifierConfig
+from .weapons import WeaponPrediction, WeaponRecognizer
 
 
 Side = Literal["friendly", "enemy"]
@@ -57,6 +58,7 @@ class SlotStatus:
     index: int
     alive: bool
     bbox: BBox
+    weapon: WeaponPrediction | None
     colored_ratio: float
     visible_colored_ratio: float
     p90_saturation: float
@@ -74,6 +76,7 @@ class SlotStatus:
             "index": self.index,
             "alive": self.alive,
             "bbox": self.bbox,
+            "weapon": None if self.weapon is None else self.weapon.to_dict(),
             "colored_ratio": round(self.colored_ratio, 4),
             "visible_colored_ratio": round(self.visible_colored_ratio, 4),
             "p90_saturation": round(self.p90_saturation, 1),
@@ -110,8 +113,15 @@ class CountResult:
 
 
 class SplatoonHudDetector:
-    def __init__(self, config: AppConfig | None = None):
+    def __init__(
+        self,
+        config: AppConfig | None = None,
+        weapon_recognizer: WeaponRecognizer | None = None,
+    ):
         self.config = config or AppConfig()
+        self._weapon_recognizer = weapon_recognizer
+        if self._weapon_recognizer is None and self.config.weapons.enabled:
+            self._weapon_recognizer = WeaponRecognizer(self.config.weapons)
 
     def count(self, frame: np.ndarray, frame_index: int = 0) -> CountResult:
         if frame.ndim != 3 or frame.shape[2] != 3:
@@ -125,6 +135,8 @@ class SplatoonHudDetector:
         )
         if not hud_present:
             slots = tuple(replace(slot, alive=False) for slot in slots)
+        elif self._weapon_recognizer is not None:
+            slots = tuple(self._classify_slot_weapon(frame, slot) for slot in slots)
 
         friendly_alive = _alive_count(slots, "friendly")
         enemy_alive = _alive_count(slots, "enemy")
@@ -178,6 +190,16 @@ class SplatoonHudDetector:
         cfg = self.config.classifier
         metrics = _measure_slot_color(crop, cfg)
         return _slot_status(side, index, bbox, _is_alive(metrics, cfg), metrics)
+
+    def _classify_slot_weapon(
+        self, frame: np.ndarray, slot: SlotStatus
+    ) -> SlotStatus:
+        if self._weapon_recognizer is None:
+            return slot
+        return replace(
+            slot,
+            weapon=self._weapon_recognizer.predict(_crop(frame, slot.bbox)),
+        )
 
 
 def _measure_slot_color(crop: np.ndarray, cfg: ClassifierConfig) -> _SlotColorMetrics:
@@ -384,12 +406,14 @@ def _slot_status(
     bbox: BBox,
     alive: bool,
     metrics: _SlotColorMetrics,
+    weapon: WeaponPrediction | None = None,
 ) -> SlotStatus:
     return SlotStatus(
         side=side,
         index=index,
         alive=alive,
         bbox=bbox,
+        weapon=weapon,
         colored_ratio=metrics.colored_ratio,
         visible_colored_ratio=metrics.visible_colored_ratio,
         p90_saturation=metrics.p90_saturation,
@@ -481,6 +505,17 @@ def _draw_slot(overlay: np.ndarray, slot: SlotStatus) -> None:
         1,
         cv2.LINE_AA,
     )
+    if slot.weapon is not None:
+        cv2.putText(
+            overlay,
+            slot.weapon.key[:5],
+            (x1, min(overlay.shape[0] - 5, y2 + 13)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.38,
+            color,
+            1,
+            cv2.LINE_AA,
+        )
 
 
 def _draw_summary(overlay: np.ndarray, result: CountResult) -> None:

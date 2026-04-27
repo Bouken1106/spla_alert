@@ -36,5 +36,22 @@
     "hud_team_hue_slots_min": 2,
     "hud_min_alive_slots": 1,
     "hud_min_team_hue_distance": 25.0
+  },
+  "weapons": {
+    "enabled": false,
+    "api_url": "https://stat.ink/api/v3/weapon",
+    "source_url": "https://stat.ink/api-info/weapon3",
+    "cache_dir": "local_assets/weapons/stat_ink_weapon3",
+    "template_size": 64,
+    "candidate_count": 3,
+    "confidence_threshold": 0.32,
+    "min_edge_ratio": 0.01,
+    "cache_ttl_hours": 168,
+    "download_timeout_seconds": 30,
+    "refresh_cache": false,
+    "crop_left_ratio": 0.08,
+    "crop_top_ratio": 0.10,
+    "crop_right_ratio": 0.92,
+    "crop_bottom_ratio": 0.88
   }
 }

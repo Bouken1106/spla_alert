@@ -5,6 +5,30 @@ import numpy as np
 
 from spla_alert.config import AppConfig, ClassifierConfig
 from spla_alert.detector import SplatoonHudDetector
+from spla_alert.weapons import WeaponCandidate, WeaponPrediction
+
+
+class FakeWeaponRecognizer:
+    def __init__(self):
+        self.calls = 0
+
+    def predict(self, crop):
+        self.calls += 1
+        return WeaponPrediction(
+            key="splattershot",
+            name="Splattershot",
+            score=0.8,
+            confidence=0.7,
+            image_url="https://example.test/splattershot.png",
+            candidates=(
+                WeaponCandidate(
+                    key="splattershot",
+                    name="Splattershot",
+                    score=0.8,
+                    image_url="https://example.test/splattershot.png",
+                ),
+            ),
+        )
 
 
 class DetectorTest(unittest.TestCase):
@@ -232,6 +256,19 @@ class DetectorTest(unittest.TestCase):
 
         self.assertEqual(result.friendly_alive, 2)
         self.assertEqual(result.enemy_alive, 3)
+
+    def test_attaches_weapon_prediction_to_each_hud_slot(self):
+        config = self._config_without_hud_gate()
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        self._draw_slots(frame, config, "friendly", {0, 1, 2, 3}, (40, 230, 80))
+        self._draw_slots(frame, config, "enemy", {0, 1, 2, 3}, (230, 40, 190))
+        recognizer = FakeWeaponRecognizer()
+
+        result = SplatoonHudDetector(config, weapon_recognizer=recognizer).count(frame)
+
+        self.assertEqual(recognizer.calls, 8)
+        self.assertTrue(all(slot.weapon is not None for slot in result.slots))
+        self.assertEqual(result.slots[0].to_dict()["weapon"]["key"], "splattershot")
 
     def _config_without_hud_gate(self):
         return AppConfig(classifier=ClassifierConfig(require_hud_presence=False))

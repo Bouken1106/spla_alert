@@ -2,4 +2,4 @@ __pycache__/
 *.py[cod]
 .venv/
 snapshot_overlay.jpg
-
+local_assets/
